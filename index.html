@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Classroom Hub | BVVS BEC Bagalkot - Engineering Physics</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- Chart.js for Physics Lab Plots -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- KaTeX for Physics Math Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            dark: {
+              900: '#070a13',
+              850: '#0c111e',
+              800: '#131b2e',
+              750: '#1b2640',
+              700: '#233252',
+            },
+            accent: {
+              cyan: '#06b6d4',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              rose: '#f43f5e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #070a13;
+      color: #f1f5f9;
+    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .glass-card {
+      background: rgba(19, 27, 46, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <!-- ================= AUTHENTICATION MODAL GATEWAY ================= -->
+  <div id="authGate" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-900/95 backdrop-blur-md">
+    <div class="glass-card max-w-md w-full p-8 rounded-2xl shadow-2xl border border-white/10 relative overflow-hidden">
+      <!-- Ambient light -->
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600/30 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-cyan-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Header Banner -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-600/20 text-indigo-400 mb-3 border border-indigo-500/30">
+          <i class="fa-solid fa-atom text-2xl"></i>
+        </div>
+        <div class="text-xs uppercase tracking-widest text-indigo-400 font-semibold mb-1">BVVS Basaveshwar Engineering College</div>
+        <h2 class="text-xl font-bold text-white tracking-tight">AI Classroom Hub: Simulation</h2>
+        <div class="text-xs text-slate-400 mt-1">Dept. of Engineering Physics • Room No: 101</div>
+      </div>
+
+      <!-- Login Track Toggle -->
+      <div class="flex p-1 bg-dark-850 rounded-xl mb-6 border border-white/5">
+        <button id="tabStudentBtn" onclick="switchAuthTab('student')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow transition-all">
+          <i class="fa-solid fa-user-graduate mr-1.5"></i> Student Portal
+        </button>
+        <button id="tabFacultyBtn" onclick="switchAuthTab('faculty')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
+          <i class="fa-solid fa-chalkboard-user mr-1.5"></i> Faculty Admin
+        </button>
+      </div>
+
+      <!-- STUDENT LOGIN FORM -->
+      <div id="studentAuthPane">
+        <!-- Step 1: CSN Verification -->
+        <div id="csnStepBox" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Enter 10-Digit CSN Number</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-mono text-sm">
+                <i class="fa-solid fa-id-card"></i>
+              </span>
+              <input type="text" id="inputCSN" placeholder="e.g., 2026010300" maxlength="10"
+                class="w-full bg-dark-850 border border-slate-700/70 rounded-xl py-2.5 pl-10 pr-4 text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"/>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1.5">Enter your official university CSN provided on your Division B roll list.</p>
+          </div>
+          <button onclick="verifyStudentCSN()" class="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
+            <span>Verify CSN</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Step 2A: First Time PIN Setup -->
+        <div id="firstTimePinBox" class="hidden space-y-4 pt-2">
+          <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+            <div class="text-xs text-emerald-400 font-medium flex items-center">
+              <i class="fa-solid fa-circle-check mr-2"></i> Verified Identity
+            </div>
+            <div id="firstTimeNameBadge" class="text-sm font-bold text-white mt-1"></div>
+            <div id="firstTimeDetailsBadge" class="text-xs text-slate-300 font-mono"></div>
+          </div>
+          <p class="text-xs text-amber-300/90 bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/20">
+            <i class="fa-solid fa-key mr-1"></i> <strong>First-Time Setup:</strong> Create a private 4-digit PIN to secure your account.
+          </p>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Create 4-Digit PIN</label>
+              <input type="password" id="newStudentPin" maxlength="4" placeholder="••••"
+                class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2 px-3 text-center text-lg font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Confirm 4-Digit PIN</label>
+              <input type="password" id="confirmStudentPin" maxlength="4" placeholder="••••"
+                class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2 px-3 text-center text-lg font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500"/>
+            </div>
+          </div>
+          <button onclick="finalizeNewPin()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/30 transition-all">
+            Save PIN & Open Dashboard
+          </button>
+          <button onclick="resetStudentAuthFlow()" class="w-full text-xs text-slate-400 hover:text-white pt-1">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Back to CSN
+          </button>
+        </div>
+
+        <!-- Step 2B: Returning Student PIN Input -->
+        <div id="returningPinBox" class="hidden space-y-4 pt-2">
+          <div class="p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-xl">
+            <div class="text-xs text-indigo-400 font-medium">Welcome back</div>
+            <div id="returningNameBadge" class="text-sm font-bold text-white mt-1"></div>
+            <div id="returningDetailsBadge" class="text-xs text-slate-300 font-mono"></div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Enter Your 4-Digit PIN</label>
+            <input type="password" id="loginStudentPin" maxlength="4" placeholder="••••"
+              class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2.5 px-3 text-center text-xl font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500"/>
+          </div>
+          <button onclick="authenticateReturningStudent()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all">
+            Authorize Entry
+          </button>
+          <div class="flex justify-between items-center text-xs pt-1">
+            <button onclick="resetStudentAuthFlow()" class="text-slate-400 hover:text-white">
+              <i class="fa-solid fa-arrow-left mr-1"></i> Switch CSN
+            </button>
+            <span class="text-slate-500">Forgot PIN? Ask Faculty</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FACULTY ADMIN LOGIN FORM -->
+      <div id="facultyAuthPane" class="hidden space-y-4">
+        <div class="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-indigo-600/30 text-indigo-400 flex items-center justify-center font-bold text-sm">
+            JG
+          </div>
+          <div>
+            <div class="text-xs text-indigo-400 uppercase font-semibold">Faculty In-Charge</div>
+            <div class="text-sm font-bold text-white">Prof. Dr. Jayashree G Ghantimath</div>
+            <div class="text-[11px] text-slate-400">Course: 1BPHS102C / 22PHY12</div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">Faculty Administrative PIN</label>
+          <input type="password" id="inputFacultyPin" maxlength="6" placeholder="••••"
+            class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2.5 px-3 text-center text-xl font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500"/>
+          <p class="text-[11px] text-slate-400 mt-1.5 text-center">Default initial PIN: <span class="font-mono text-indigo-400">1010</span></p>
+        </div>
+        <button onclick="authenticateFaculty()" class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all">
+          Unlock Professor Command
+        </button>
+      </div>
+
+      <!-- Error / Status Notice -->
+      <div id="authNotice" class="hidden mt-4 p-2.5 rounded-lg text-xs font-medium text-center"></div>
+
+      <!-- Attribution Footer -->
+      <div class="mt-6 pt-4 border-t border-white/5 text-center text-[11px] text-slate-500">
+        Engineered & Configured by <span class="text-slate-300 font-semibold">Manojna Mahesh Palleda</span><br/>
+        Physics Cycle • Room 101 • Academic Year 2026-27
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= APPLICATION NAVIGATION BAR ================= -->
+  <header class="glass-card sticky top-0 z-40 border-b border-white/10 px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Institutional Branding -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid fa-atom text-white text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs uppercase tracking-wider font-bold text-indigo-400">BVVS BEC Bagalkot</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 font-mono">1BPHS102C</span>
+          </div>
+          <div class="text-sm font-bold text-white flex items-center gap-2">
+            <span>Engineering Physics Simulation</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Room 101
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Nav Links -->
+      <nav class="hidden md:flex items-center p-1 bg-dark-850 rounded-xl border border-white/5 text-xs font-medium">
+        <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-tab px-3 py-1.5 rounded-lg text-white bg-indigo-600 transition-all">Overview</button>
+        <button onclick="navigateTo('labs')" id="nav-labs" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">10 Labs Sandbox</button>
+        <button onclick="navigateTo('quiz')" id="nav-quiz" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Live Quiz & Speed</button>
+        <button onclick="navigateTo('repository')" id="nav-repository" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Docs & Folders</button>
+        <button onclick="navigateTo('roster')" id="nav-roster" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Class Roll (55)</button>
+        <button onclick="navigateTo('chat')" id="nav-chat" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Room Chat</button>
+        <button onclick="navigateTo('tutor')" id="nav-tutor" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">AI Tutor</button>
+      </nav>
+
+      <!-- Right User Badge & Social Share -->
+      <div class="flex items-center space-x-2.5">
+        <!-- Share to WhatsApp -->
+        <button onclick="shareOnWhatsApp()" title="Share Room 101 link on WhatsApp" class="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white border border-emerald-500/30 transition-all text-xs font-semibold flex items-center space-x-1.5">
+          <i class="fa-brands fa-whatsapp text-sm"></i>
+          <span class="hidden sm:inline">Share</span>
+        </button>
+
+        <!-- Current User Profile Pill -->
+        <div class="flex items-center space-x-2.5 pl-2 border-l border-white/10">
+          <div class="text-right hidden sm:block">
+            <div id="sessionUserName" class="text-xs font-bold text-white">Guest</div>
+            <div id="sessionUserRole" class="text-[10px] text-indigo-400 font-mono">Unauthenticated</div>
+          </div>
+          <button onclick="promptLogout()" title="Change User / Logout" class="w-8 h-8 rounded-lg bg-dark-750 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-white/10 flex items-center justify-center transition-all">
+            <i class="fa-solid fa-power-off text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT VIEWPORT ================= -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-6">
+
+    <!-- ================= VIEW 1: DASHBOARD OVERVIEW ================= -->
+    <section id="view-dashboard" class="space-y-6">
+      
+      <!-- Hero Banner -->
+      <div class="glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden border border-white/10">
+        <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-indigo-600/10 to-transparent pointer-events-none"></div>
+        <div class="max-w-2xl space-y-3">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-xs text-indigo-300">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>B.E. I Semester • Division B • Physics Cycle</span>
+          </div>
+          <h1 class="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
+            Quantum Physics & Engineering Mechanics Hub
+          </h1>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Faculty In-Charge: <strong class="text-white">Prof. Dr. Jayashree G Ghantimath</strong>. Complete syllabus simulation, 10 interactive laboratory experiments, speed-tracked live quizzes, and roll-call roster.
+          </p>
+          <div class="pt-2 flex flex-wrap gap-2 text-xs">
+            <button onclick="navigateTo('labs')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center space-x-1.5">
+              <i class="fa-solid fa-flask"></i> <span>Launch Planck's & 10 Labs</span>
+            </button>
+            <button onclick="navigateTo('quiz')" class="px-4 py-2 bg-dark-750 hover:bg-dark-700 text-slate-200 font-semibold rounded-xl border border-white/10 transition-all flex items-center space-x-1.5">
+              <i class="fa-solid fa-stopwatch"></i> <span>Live Quiz Chronometer</span>
+            </button>
+            <button onclick="triggerSmartboardMode()" class="px-4 py-2 bg-purple-600/30 hover:bg-purple-600 text-purple-300 hover:text-white border border-purple-500/30 font-semibold rounded-xl transition-all flex items-center space-x-1.5">
+              <i class="fa-solid fa-chalkboard"></i> <span>Room 101 Smartboard Mode</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="glass-card p-4 rounded-xl border border-white/5">
+          <div class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Active Division Roster</div>
+          <div class="text-2xl font-extrabold text-white mt-1 font-mono">55 / 55</div>
+          <div class="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
+            <i class="fa-solid fa-circle-check"></i> CSN Verified Active
+          </div>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-white/5">
+          <div class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Laboratory Modules</div>
+          <div class="text-2xl font-extrabold text-cyan-400 mt-1 font-mono">10 Labs</div>
+          <div class="text-[11px] text-slate-400 mt-1">Planck's, Laser, Fiber, etc.</div>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-white/5">
+          <div class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Question Bank</div>
+          <div class="text-2xl font-extrabold text-indigo-400 mt-1 font-mono">50+ Numericals</div>
+          <div class="text-[11px] text-slate-400 mt-1">CIE I & II, SEE Exam sets</div>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-white/5">
+          <div class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Security Architecture</div>
+          <div class="text-2xl font-extrabold text-amber-400 mt-1">CSN + PIN</div>
+          <div class="text-[11px] text-slate-400 mt-1">First-Time Self Setup</div>
+        </div>
+      </div>
+
+      <!-- Curriculum Syllabus Units Breakdown -->
+      <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-book-bookmark text-indigo-400"></i> Course Curriculum: 1BPHS102C / 22PHY12
+          </h2>
+          <span class="text-xs text-slate-400">42 Hours Teaching Plan</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="p-4 rounded-xl bg-dark-850/80 border border-white/5 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-indigo-400">UNIT I</span>
+              <span class="text-slate-400 font-mono">11 Hrs</span>
+            </div>
+            <div class="text-sm font-semibold text-white">Quantum Mechanics</div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              de Broglie matter waves, group & phase velocity, Heisenberg uncertainty, 1D Schrödinger wave equation, particle in a box.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-dark-850/80 border border-white/5 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-cyan-400">UNIT II</span>
+              <span class="text-slate-400 font-mono">10 Hrs</span>
+            </div>
+            <div class="text-sm font-semibold text-white">Superconductivity & Semis</div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Meissner effect, Silsbee effect, Type I/II, BCS theory, DC/AC SQUIDs, Hall effect and Fermi level in semiconductors.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-dark-850/80 border border-white/5 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-emerald-400">UNIT III</span>
+              <span class="text-slate-400 font-mono">11 Hrs</span>
+            </div>
+            <div class="text-sm font-semibold text-white">Lasers & Optical Fibers</div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Einstein's A & B coefficients, semiconductor diode laser, numerical aperture, acceptance angle, attenuation.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-dark-850/80 border border-white/5 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-purple-400">UNIT IV</span>
+              <span class="text-slate-400 font-mono">10 Hrs</span>
+            </div>
+            <div class="text-sm font-semibold text-white">Quantum Computing</div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Qubit definition, Bloch sphere, Pauli X, Y, Z matrices, Hadamard, CNOT, Controlled-Z, Toffoli reversible gates.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 2: 10 LABS INTERACTIVE SANDBOX ================= -->
+    <section id="view-labs" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/10">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-vial-virus text-cyan-400"></i> Engineering Physics Practical Sandbox
+          </h2>
+          <p class="text-xs text-slate-400">All 10 curriculum experiments with dynamic calculations, graphing, and smartboard viva mode.</p>
+        </div>
+        <!-- Lab Experiment Picker -->
+        <select id="labSelector" onchange="loadSelectedLab(this.value)" class="bg-dark-850 border border-slate-700 text-sm text-white px-3 py-2 rounded-xl focus:outline-none focus:border-cyan-500">
+          <option value="1">Exp 01: Determination of Planck's Constant using LEDs</option>
+          <option value="2">Exp 02: Determination of Fermi Energy for a Conductor</option>
+          <option value="3">Exp 03: Wavelength of Laser using Diffraction Grating</option>
+          <option value="4">Exp 04: Numerical Aperture & Acceptance Angle of Optical Fiber</option>
+          <option value="5">Exp 05: Energy Gap of Semiconductor by Four-Probe Method</option>
+          <option value="6">Exp 06: Frequency Response in Series LCR Circuit</option>
+          <option value="7">Exp 07: Identification of Passive Components in Black Box</option>
+          <option value="8">Exp 08: Photodiode I-V Characteristics & Responsivity</option>
+          <option value="9">Exp 09: Dielectric Constant of Capacitor (Charging/Discharging)</option>
+          <option value="10">Exp 10: Energy Gap of Semiconductor Diode</option>
+        </select>
+      </div>
+
+      <!-- EXPERIMENT 1 SIMULATOR: PLANCK'S CONSTANT -->
+      <div id="lab-exp-1" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Controls & Input Panel -->
+        <div class="lg:col-span-5 glass-card p-6 rounded-2xl border border-white/10 space-y-5">
+          <div class="flex justify-between items-center">
+            <span class="text-xs uppercase tracking-wider font-bold text-cyan-400 font-mono">Experiment #01</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">V0 vs 1/λ Linear Fit</span>
+          </div>
+          <h3 class="text-lg font-bold text-white">Determine Planck's Constant ($h$)</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Formula: $$h = \frac{e}{c} \times \frac{\Delta V_0}{\Delta(1/\lambda)} = \frac{e}{c} \times \text{Slope}$$
+            Standard constant: $h = 6.626 \times 10^{-34} \text{ J}\cdot\text{s}$.
+          </p>
+
+          <!-- LED Knee Voltage Sliders / Inputs -->
+          <div class="space-y-3 pt-2">
+            <div class="p-3 rounded-xl bg-dark-850/80 border border-rose-500/30">
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-rose-400 font-semibold">🔴 Red LED ($\lambda_1 = 650 \text{ nm}$)</span>
+                <span id="v0_red_val" class="font-mono text-white">1.90 V</span>
+              </div>
+              <input type="range" id="v0_red" min="1.6" max="2.2" step="0.02" value="1.90" oninput="calculatePlanck()" class="w-full accent-rose-500"/>
+            </div>
+
+            <div class="p-3 rounded-xl bg-dark-850/80 border border-amber-500/30">
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-amber-400 font-semibold">🟡 Yellow LED ($\lambda_2 = 585 \text{ nm}$)</span>
+                <span id="v0_yellow_val" class="font-mono text-white">2.12 V</span>
+              </div>
+              <input type="range" id="v0_yellow" min="1.8" max="2.4" step="0.02" value="2.12" oninput="calculatePlanck()" class="w-full accent-amber-500"/>
+            </div>
+
+            <div class="p-3 rounded-xl bg-dark-850/80 border border-emerald-500/30">
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-emerald-400 font-semibold">🟢 Green LED ($\lambda_3 = 525 \text{ nm}$)</span>
+                <span id="v0_green_val" class="font-mono text-white">2.36 V</span>
+              </div>
+              <input type="range" id="v0_green" min="2.0" max="2.6" step="0.02" value="2.36" oninput="calculatePlanck()" class="w-full accent-emerald-500"/>
+            </div>
+
+            <div class="p-3 rounded-xl bg-dark-850/80 border border-blue-500/30">
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-blue-400 font-semibold">🔵 Blue LED ($\lambda_4 = 470 \text{ nm}$)</span>
+                <span id="v0_blue_val" class="font-mono text-white">2.64 V</span>
+              </div>
+              <input type="range" id="v0_blue" min="2.3" max="3.0" step="0.02" value="2.64" oninput="calculatePlanck()" class="w-full accent-blue-500"/>
+            </div>
+          </div>
+
+          <!-- Dynamic Output Results -->
+          <div class="p-4 bg-dark-900/90 rounded-xl border border-white/10 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-400">Calculated Slope ($\Delta V_0 / \Delta(1/\lambda)$):</span>
+              <span id="calc_slope" class="font-mono font-bold text-white">1.24 × 10⁻⁶ V·m</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-400">Planck's Constant ($h_{exp}$):</span>
+              <span id="calc_h" class="font-mono font-bold text-cyan-400">6.618 × 10⁻³⁴ J·s</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-400">Experimental Error:</span>
+              <span id="calc_error" class="font-mono font-bold text-emerald-400">0.12%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Graph & Projector Viva Mode -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-white/10 flex flex-col justify-between space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-cyan-400"></i> Interactive Plot: Knee Voltage $V_0$ vs $1/\lambda$
+            </h4>
+            <button onclick="projectorVivaModal(1)" class="text-xs px-3 py-1 bg-dark-750 hover:bg-dark-700 text-slate-200 border border-white/10 rounded-lg flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-expand text-indigo-400"></i> Smartboard Projector Viva
+            </button>
+          </div>
+          
+          <div class="w-full h-72 bg-dark-850/60 rounded-xl p-2 border border-white/5 relative">
+            <canvas id="planckChart"></canvas>
+          </div>
+
+          <div class="p-3 bg-dark-850/80 rounded-xl border border-white/5 text-xs text-slate-300">
+            <strong class="text-white">Observation Rule:</strong> The knee voltage $V_0$ is directly proportional to frequency $\nu = c/\lambda$. When $e V_0 = h \nu$, the photon energy matches the energy required to overcome the junction barrier.
+          </div>
+        </div>
+      </div>
+
+      <!-- GENERIC CONTAINER FOR EXPERIMENTS 2 TO 10 -->
+      <div id="lab-exp-other" class="hidden glass-card p-8 rounded-2xl border border-white/10 text-center space-y-4">
+        <div class="w-16 h-16 rounded-2xl bg-cyan-600/20 text-cyan-400 flex items-center justify-center mx-auto text-2xl">
+          <i class="fa-solid fa-microscope"></i>
+        </div>
+        <h3 id="otherLabTitle" class="text-xl font-bold text-white"></h3>
+        <p id="otherLabDesc" class="text-sm text-slate-300 max-w-xl mx-auto"></p>
+        <div class="p-4 bg-dark-850 max-w-md mx-auto rounded-xl border border-white/5 text-left text-xs space-y-2">
+          <div class="font-bold text-indigo-400">Standard Experimental Procedure:</div>
+          <ul id="otherLabSteps" class="list-disc pl-4 space-y-1 text-slate-300"></ul>
+        </div>
+        <button onclick="projectorVivaModal(document.getElementById('labSelector').value)" class="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-cyan-600/30 transition-all">
+          <i class="fa-solid fa-chalkboard mr-1.5"></i> Launch Lab Viva Questions on Projector
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ================= VIEW 3: LIVE SPEED-TRACKED QUIZ ================= -->
+    <section id="view-quiz" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/10">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-stopwatch text-indigo-400"></i> Live Room 101 Physics Quiz & Speed Tracker
+          </h2>
+          <p class="text-xs text-slate-400">Real problems from Unit I-IV assignments and CIE question papers. Timed to the millisecond.</p>
+        </div>
+        <div class="flex items-center space-x-3 text-xs font-mono">
+          <span class="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg">
+            <i class="fa-solid fa-bolt mr-1"></i> Streak: <span id="userStreak">1 Day</span>
+          </span>
+          <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-lg">
+            <i class="fa-solid fa-trophy mr-1"></i> Score: <span id="userScore">0 Pts</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Live Question Card -->
+        <div class="lg:col-span-8 glass-card p-6 lg:p-8 rounded-2xl border border-white/10 space-y-6">
+          <div class="flex justify-between items-center text-xs">
+            <span id="quizBadgeUnit" class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 font-semibold font-mono">UNIT I • Assignment Q05</span>
+            <div class="flex items-center space-x-2 font-mono text-slate-300">
+              <i class="fa-regular fa-clock text-amber-400"></i>
+              <span>Chronometer: <strong id="quizTimer" class="text-amber-400 text-sm">0.00s</strong></span>
+            </div>
+          </div>
+
+          <div id="quizQuestionText" class="text-base lg:text-lg font-medium text-white leading-relaxed">
+            Determine the de Broglie wavelength associated with an electron moving with velocity $v = 2.19 \times 10^6 \text{ m/s}$. ($m_e = 9.11 \times 10^{-31}\text{ kg}$, $h = 6.63 \times 10^{-34}\text{ J}\cdot\text{s}$)
+          </div>
+
+          <!-- Answer Options -->
+          <div id="quizOptionsContainer" class="space-y-3">
+            <!-- Dynamic Buttons rendered via JS -->
+          </div>
+
+          <!-- Response Feedback -->
+          <div id="quizFeedbackBox" class="hidden p-4 rounded-xl border text-xs leading-relaxed"></div>
+
+          <div class="flex justify-between items-center pt-2">
+            <span class="text-xs text-slate-400">Question <span id="currentQNum">1</span> of 5 Active</span>
+            <button onclick="nextQuizQuestion()" id="btnNextQuestion" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all">
+              Next Question <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Class Standings Leaderboard -->
+        <div class="lg:col-span-4 glass-card p-6 rounded-2xl border border-white/10 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-ranking-star text-amber-400"></i> Room 101 Standings
+            </h3>
+            <span class="text-[11px] text-slate-400">Live Latency</span>
+          </div>
+
+          <div id="leaderboardList" class="space-y-2.5 max-h-96 overflow-y-auto custom-scroll pr-1">
+            <!-- Dynamic leaderboard entries -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= VIEW 4: DOCUMENTS & REPOSITORY ================= -->
+    <section id="view-repository" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/10">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-amber-400"></i> Syllabus, CIE Papers & Course Repository
+          </h2>
+          <p class="text-xs text-slate-400">Access and upload course materials, lab observation guides, and CIE question sheets.</p>
+        </div>
+
+        <!-- WhatsApp Style File Upload Button (Faculty or Authorized Student) -->
+        <label class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold rounded-xl cursor-pointer shadow-lg shadow-indigo-600/30 transition-all flex items-center space-x-1.5">
+          <i class="fa-solid fa-paperclip"></i>
+          <span>Upload File (PDF / DOC / Image)</span>
+          <input type="file" id="fileUploadInput" onchange="handleFileUpload(event)" class="hidden"/>
+        </label>
+      </div>
+
+      <!-- Folders Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-folder-closed"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Course Syllabus</h3>
+            <div class="text-[11px] text-slate-400 mt-0.5">1BPHS102C (IPCC 4 Credits)</div>
+          </div>
+          <div class="pt-2 text-xs space-y-1.5 text-slate-300">
+            <a href="#" class="block hover:text-indigo-400 truncate"><i class="fa-solid fa-file-pdf mr-1.5 text-rose-400"></i> CV Syllabus 2026-27.pdf</a>
+            <a href="#" class="block hover:text-indigo-400 truncate"><i class="fa-solid fa-file-lines mr-1.5 text-cyan-400"></i> 42-Hour Teaching Plan.docx</a>
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-folder-closed"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Assignments I & II</h3>
+            <div class="text-[11px] text-slate-400 mt-0.5">50 Comprehensive Questions</div>
+          </div>
+          <div class="pt-2 text-xs space-y-1.5 text-slate-300">
+            <a href="#" class="block hover:text-indigo-400 truncate"><i class="fa-solid fa-file-image mr-1.5 text-emerald-400"></i> Unit I Assignment (Q01-13).jpg</a>
+            <a href="#" class="block hover:text-indigo-400 truncate"><i class="fa-solid fa-file-image mr-1.5 text-emerald-400"></i> Unit II Assignment (Q31-50).jpg</a>
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-folder-closed"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">CIE & SEE Exam Sets</h3>
+            <div class="text-[11px] text-slate-400 mt-0.5">Question Banks & Keys</div>
+          </div>
+          <div class="pt-2 text-xs space-y-1.5 text-slate-300">
+            <a href="#" class="block hover:text-indigo-400 truncate"><i class="fa-solid fa-file-lines mr-1.5 text-amber-400"></i> First CIE Test (Nov 2025).pdf</a>
+            <a href="#" class="block hover:text-indigo-400 truncate"><i class="fa-solid fa-file-lines mr-1.5 text-amber-400"></i> Second CIE Test (Jan 2026).pdf</a>
+            <a href="#" class="block hover:text-indigo-400 truncate"><i class="fa-solid fa-file-lines mr-1.5 text-amber-400"></i> SEE Jan/Feb 2026 Paper.pdf</a>
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-folder-closed"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Laboratory Manuals</h3>
+            <div class="text-[11px] text-slate-400 mt-0.5">10 Practical Experiments</div>
+          </div>
+          <div class="pt-2 text-xs space-y-1.5 text-slate-300">
+            <a href="#" class="block hover:text-indigo-400 truncate"><i class="fa-solid fa-file-pdf mr-1.5 text-rose-400"></i> List of 10 Experiments.pdf</a>
+            <a href="#" class="block hover:text-indigo-400 truncate"><i class="fa-solid fa-file-lines mr-1.5 text-cyan-400"></i> Planck's LED Manual.pdf</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Uploaded Documents Feed -->
+      <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up text-indigo-400"></i> Live Room 101 Document Repository
+        </h3>
+        <div id="uploadedFilesList" class="space-y-2 text-xs text-slate-300">
+          <div class="p-3 bg-dark-850/80 rounded-xl border border-white/5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <i class="fa-solid fa-file-pdf text-rose-400 text-base"></i>
+              <div>
+                <div class="font-semibold text-white">1BPHS102C_Model_Question_Paper_Solutions.pdf</div>
+                <div class="text-[10px] text-slate-400">Uploaded by Prof. Dr. Jayashree G Ghantimath • 2.4 MB</div>
+              </div>
+            </div>
+            <span class="text-indigo-400 font-mono text-[11px]">Synced</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 5: CLASS ROSTER & PIN MANAGER ================= -->
+    <section id="view-roster" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/10">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-users text-indigo-400"></i> B.E. I Sem Division B Roll Call (Room 101)
+          </h2>
+          <p class="text-xs text-slate-400">Complete 55-student roster with CSN, PIN configuration status, and faculty administrative override.</p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <input type="text" id="rosterSearchInput" oninput="filterRosterTable(this.value)" placeholder="Search Name, Roll, or CSN..."
+            class="bg-dark-850 border border-slate-700 text-xs text-white px-3 py-2 rounded-xl focus:outline-none focus:border-indigo-500 font-mono"/>
+          <button onclick="promptAddNewStudent()" id="facultyAddMemberBtn" class="hidden px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow transition-all">
+            <i class="fa-solid fa-user-plus mr-1"></i> Add Student
+          </button>
+        </div>
+      </div>
+
+      <!-- Roster Table -->
+      <div class="glass-card rounded-2xl border border-white/10 overflow-hidden">
+        <div class="overflow-x-auto max-h-[560px] custom-scroll">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-dark-850/90 uppercase text-[10px] tracking-wider text-slate-400 sticky top-0 border-b border-white/5">
+              <tr>
+                <th class="py-3 px-4">Roll</th>
+                <th class="py-3 px-4">Student Name</th>
+                <th class="py-3 px-4 font-mono">CSN Number</th>
+                <th class="py-3 px-4">Branch</th>
+                <th class="py-3 px-4">Attendance</th>
+                <th class="py-3 px-4">PIN Status</th>
+                <th class="py-3 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="rosterTableBody" class="divide-y divide-white/5 font-sans">
+              <!-- Dynamically populated 55 students -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 6: ROOM 101 MESSENGER ================= -->
+    <section id="view-chat" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/10">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-comments text-emerald-400"></i> Room 101 Classroom Messaging
+          </h2>
+          <p class="text-xs text-slate-400">WhatsApp-style broadcast announcements and encrypted 1-on-1 student–faculty channels.</p>
+        </div>
+        <div class="flex p-1 bg-dark-850 rounded-xl border border-white/5 text-xs">
+          <button onclick="switchChatChannel('group')" id="btnChatGroup" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold">General Broadcast</button>
+          <button onclick="switchChatChannel('faculty')" id="btnChatFaculty" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">1-on-1 Faculty DM</button>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl border border-white/10 h-[500px] flex flex-col justify-between overflow-hidden">
+        <!-- Messages Stream -->
+        <div id="chatMessagesStream" class="p-6 overflow-y-auto custom-scroll space-y-4 flex-grow">
+          <!-- Default Welcome Broadcast -->
+          <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 rounded-full bg-purple-600/30 text-purple-400 flex items-center justify-center font-bold text-xs">
+              JG
+            </div>
+            <div class="space-y-1 max-w-lg">
+              <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-purple-400">Prof. Dr. Jayashree G Ghantimath</span>
+                <span class="text-[10px] text-slate-500">10:15 AM</span>
+              </div>
+              <div class="p-3 bg-dark-850 rounded-2xl rounded-tl-none border border-white/5 text-xs text-slate-200 leading-relaxed">
+                Welcome Division B to AI Classroom Hub! Please review the 10 lab experiments and prepare for the Planck's constant viva voce in our next class in Room 101.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message Input Bar -->
+        <div class="p-4 bg-dark-850/90 border-t border-white/10 flex items-center space-x-2">
+          <input type="text" id="chatTextInput" onkeydown="if(event.key==='Enter') sendChatMessage()" placeholder="Type a message or physics inquiry to Room 101..."
+            class="flex-grow bg-dark-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"/>
+          <button onclick="sendChatMessage()" class="p-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-600/30 transition-all flex items-center space-x-1">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 7: BEC AI PHYSICS TUTOR ================= -->
+    <section id="view-tutor" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/10">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-robot text-purple-400"></i> BEC AI Physics Tutor
+          </h2>
+          <p class="text-xs text-slate-400">Ask any Engineering Physics question or request full mathematical derivations.</p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl border border-white/10 h-[520px] flex flex-col justify-between overflow-hidden">
+        <!-- Tutor Conversation Stream -->
+        <div id="tutorMessagesStream" class="p-6 overflow-y-auto custom-scroll space-y-4 flex-grow">
+          <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+              AI
+            </div>
+            <div class="space-y-1 max-w-xl">
+              <div class="text-xs font-bold text-purple-400">BEC AI Physics Engine</div>
+              <div class="p-4 bg-dark-850 rounded-2xl rounded-tl-none border border-white/5 text-xs text-slate-200 leading-relaxed space-y-2">
+                <p>Hello! I am calibrated specifically for <strong>1BPHS102C / 22PHY12 Engineering Physics</strong>.</p>
+                <p>You can ask me to derive expressions (e.g. <em>1D Time-Independent Schrödinger equation</em>, <em>Group & Phase velocity relation</em>, <em>Einstein's A & B coefficients</em>, or <em>Hall coefficient</em>) or solve any numerical from your question sheet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Prompt Chips -->
+        <div class="px-6 py-2 bg-dark-850/50 border-t border-white/5 flex gap-2 overflow-x-auto text-[11px] text-slate-300">
+          <button onclick="askPresetPrompt('Derive 1D Time-Independent Schrödinger Wave Equation')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5">Derive Schrödinger Eq</button>
+          <button onclick="askPresetPrompt('Explain Meissner Effect and Silsbee Rule in Superconductors')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5">Meissner Effect</button>
+          <button onclick="askPresetPrompt('Solve Assignment Q07: Accelerating potential for proton to have 1 Angstrom wavelength')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5">Solve Q07 (Proton λ)</button>
+        </div>
+
+        <!-- Input Bar -->
+        <div class="p-4 bg-dark-850 border-t border-white/10 flex items-center space-x-2">
+          <input type="text" id="tutorTextInput" onkeydown="if(event.key==='Enter') sendTutorQuery()" placeholder="Ask about derivations, formulas, or assignments..."
+            class="flex-grow bg-dark-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"/>
+          <button onclick="sendTutorQuery()" class="p-2.5 px-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-purple-600/30 transition-all">
+            <i class="fa-solid fa-sparkles mr-1"></i> Explain
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= PROJECT FOOTER ================= -->
+  <footer class="glass-card border-t border-white/10 py-4 px-6 text-center text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+      <div>
+        <strong class="text-white">AI Classroom Hub</strong> • Basaveshwar Engineering College (Autonomous), Bagalkot - 587102
+      </div>
+      <div>
+        Designed & Built by <span class="text-indigo-400 font-semibold">Manojna Mahesh Palleda</span> (Roll No. 02, Div B)
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= JAVASCRIPT APPLICATION CORE ================= -->
+  <script>
+    // -------------------------------------------------------------
+    // 1. OFFICIAL ROSTER DATABASE: 55 STUDENTS (Division B Room 101)
+    // -------------------------------------------------------------
+    const initialStudents = [
+      { roll: 1, name: "MALLIKARJUN CHANDRAM DUNAGI", csn: "2026010074", gender: "Male", branch: "CSE" },
+      { roll: 2, name: "MANOJNA MAHESH PALLEDA", csn: "2026010300", gender: "Male", branch: "CSE" },
+      { roll: 3, name: "MOHAMMAD ZUNAID MUJAVAR", csn: "2026010248", gender: "Male", branch: "CSE" },
+      { roll: 4, name: "MOHAMMED ALI GOLASANGI", csn: "2026010545", gender: "Male", branch: "CSE" },
+      { roll: 5, name: "MUTTANNA", csn: "2026010222", gender: "Male", branch: "CSE" },
+      { roll: 6, name: "NAHIDAAFASHA FAIROZAHAMED MOMIN", csn: "2026010505", gender: "Female", branch: "CSE" },
+      { roll: 7, name: "NARAYAN RAGHAVENDRA KATTI", csn: "2026010772", gender: "Male", branch: "CSE" },
+      { roll: 8, name: "NETRA MAHALINGAPPA HUKKERI", csn: "2026010069", gender: "Female", branch: "CSE" },
+      { roll: 9, name: "OMKAR KAMANAKERI", csn: "2026010004", gender: "Male", branch: "CSE" },
+      { roll: 10, name: "PRAJWAL RAJSHEKAR GANGAL", csn: "2026010333", gender: "Male", branch: "CSE" },
+      { roll: 11, name: "PRANITA PRAKASH JADHAV", csn: "2026010135", gender: "Female", branch: "CSE" },
+      { roll: 12, name: "PRATHAM JUNJARWAD", csn: "2026010224", gender: "Male", branch: "CSE" },
+      { roll: 13, name: "PRATHIKSHA PRAKASH DASANAYAKAR", csn: "2026010844", gender: "Female", branch: "CSE" },
+      { roll: 14, name: "PRATIBHA MALLIKARJUN PATIL", csn: "2026010495", gender: "Female", branch: "CSE" },
+      { roll: 15, name: "PRATIBHA MULGUND", csn: "2026010851", gender: "Female", branch: "CSE" },
+      { roll: 16, name: "PRATIBHA YALAGURI NADAGADDI", csn: "2026010858", gender: "Female", branch: "CSE" },
+      { roll: 17, name: "PREETI SHEKHARAPPA MARADI", csn: "2026010468", gender: "Male", branch: "CSE" },
+      { roll: 18, name: "PREETI VITHAL BAGEWADI", csn: "2026010143", gender: "Female", branch: "CSE" },
+      { roll: 19, name: "PRIYA KRISHNAPPA BADASAL", csn: "2026010551", gender: "Female", branch: "CSE" },
+      { roll: 20, name: "PRIYA UMESH HALAMANI", csn: "2026010853", gender: "Female", branch: "CSE" },
+      { roll: 21, name: "PRIYANKA MAGADUM", csn: "2026010416", gender: "Female", branch: "CSE" },
+      { roll: 22, name: "PRIYANKA MUDAKAPPA KHILARI", csn: "2026010644", gender: "Female", branch: "CSE" },
+      { roll: 23, name: "PRIYANKA RAJENDRA KALARI", csn: "2026010753", gender: "Female", branch: "CSE" },
+      { roll: 24, name: "RAJESHWARI ASHOK KARI", csn: "2026010202", gender: "Female", branch: "CSE" },
+      { roll: 25, name: "RAKSHITA GANIGER", csn: "2026010444", gender: "Female", branch: "CSE" },
+      { roll: 26, name: "RAKSHITA GOPAL KAMBLE", csn: "2026010103", gender: "Female", branch: "CSE" },
+      { roll: 27, name: "RAKSHITA MARUTI KUMBAR", csn: "2026010720", gender: "Female", branch: "CSE" },
+      { roll: 28, name: "RAKSHITA WALIKAR", csn: "2026010845", gender: "Female", branch: "CSE" },
+      { roll: 29, name: "RASHMI V GOURIMATH", csn: "2026010107", gender: "Female", branch: "CSE" },
+      { roll: 30, name: "REET SURENDRA MAHAJAN", csn: "2026010503", gender: "Female", branch: "CSE" },
+      { roll: 31, name: "REVATI NARAYAN UTTARKAR", csn: "2026010155", gender: "Female", branch: "CSE" },
+      { roll: 32, name: "RIYA RAVISHANKAR BIDARI", csn: "2026010818", gender: "Female", branch: "CSE" },
+      { roll: 33, name: "ROHINI GULAGANJI", csn: "2026010708", gender: "Female", branch: "CSE" },
+      { roll: 34, name: "SACHIN NAGAPPA GANADAL", csn: "2026010560", gender: "Male", branch: "CSE" },
+      { roll: 35, name: "SAGAR RAJU MURAGANNAVAR", csn: "2026010164", gender: "Male", branch: "CSE" },
+      { roll: 36, name: "SAGAR SHIVASUNDAR MELINAMANI", csn: "2026011031", gender: "Male", branch: "CSE" },
+      { roll: 37, name: "SAHANA KRISHNAPPA ARAKERI", csn: "2026010628", gender: "Female", branch: "CSE" },
+      { roll: 38, name: "SAHANA SANGAPPA SAJJAN", csn: "2026010117", gender: "Female", branch: "CSE" },
+      { roll: 39, name: "SAHANA SHASHIDHAR HUGAR", csn: "2026010801", gender: "Female", branch: "CSE" },
+      { roll: 40, name: "SAKSHI BIRADAR", csn: "2026010769", gender: "Female", branch: "CSE" },
+      { roll: 41, name: "SAKSHI CHITRAGAR", csn: "2026010442", gender: "Female", branch: "CSE" },
+      { roll: 42, name: "SAKSHI MALLAYYA MATHAPATI", csn: "2026010119", gender: "Female", branch: "CSE" },
+      { roll: 43, name: "SAKSHI V KOVALLI", csn: "2026010212", gender: "Female", branch: "CSE" },
+      { roll: 44, name: "SAMARTH MAHESH KADADEVAR", csn: "2026010375", gender: "Male", branch: "CSE" },
+      { roll: 45, name: "SANDEEP", csn: "2026011037", gender: "Male", branch: "CSE" },
+      { roll: 46, name: "SANJANA BALAPPA MENASI", csn: "2026010182", gender: "Female", branch: "CSE" },
+      { roll: 47, name: "SANJANA HANAMANTH KAMBAR", csn: "2026010695", gender: "Female", branch: "CSE" },
+      { roll: 48, name: "SANJANA S MIRJI", csn: "2026010244", gender: "Female", branch: "CSE" },
+      { roll: 49, name: "SANJANA SURESH RAJAPUT", csn: "2026010607", gender: "Female", branch: "CSE" },
+      { roll: 50, name: "SANJANA UGALAT", csn: "2026010268", gender: "Female", branch: "CSE" },
+      { roll: 51, name: "SANJANADEVI YATTINAMANI", csn: "2026010602", gender: "Female", branch: "CSE" },
+      { roll: 52, name: "SANJEEDA PATHAN", csn: "2026010589", gender: "Female", branch: "CSE" },
+      { roll: 53, name: "SANSKAR RAJENDRA MALI", csn: "2026010752", gender: "Male", branch: "CSE" },
+      { roll: 54, name: "SAROJA MAHADEV CHAVAN", csn: "2026011035", gender: "Female", branch: "CSE" },
+      { roll: 55, name: "SAVITA SHEKHAPPA HALLI", csn: "2026010105", gender: "Female", branch: "CSE" }
+    ];
+
+    // Local Storage Hydration
+    function getStoredStudents() {
+      const stored = localStorage.getItem('bec_students_roster');
+      if (!stored) {
+        localStorage.setItem('bec_students_roster', JSON.stringify(initialStudents));
+        return initialStudents;
+      }
+      return JSON.parse(stored);
+    }
+
+    let students = getStoredStudents();
+    let currentAuthStudent = null;
+    let currentUserSession = null;
+
+    // -------------------------------------------------------------
+    // 2. AUTHENTICATION & PIN MANAGEMENT ENGINE
+    // -------------------------------------------------------------
+    function switchAuthTab(tab) {
+      const studentTab = document.getElementById('tabStudentBtn');
+      const facultyTab = document.getElementById('tabFacultyBtn');
+      const studentPane = document.getElementById('studentAuthPane');
+      const facultyPane = document.getElementById('facultyAuthPane');
+      hideAuthNotice();
+
+      if (tab === 'student') {
+        studentTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow transition-all";
+        facultyTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
+        studentPane.classList.remove('hidden');
+        facultyPane.classList.add('hidden');
+      } else {
+        facultyTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow transition-all";
+        studentTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
+        facultyPane.classList.remove('hidden');
+        studentPane.classList.add('hidden');
+      }
+    }
+
+    function showAuthNotice(msg, isError = true) {
+      const notice = document.getElementById('authNotice');
+      notice.classList.remove('hidden', 'bg-rose-500/10', 'text-rose-400', 'border-rose-500/20', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+      if (isError) {
+        notice.classList.add('bg-rose-500/10', 'text-rose-400', 'border', 'border-rose-500/20');
+      } else {
+        notice.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border', 'border-emerald-500/20');
+      }
+      notice.innerHTML = msg;
+    }
+
+    function hideAuthNotice() {
+      document.getElementById('authNotice').classList.add('hidden');
+    }
+
+    // Step 1: Verify CSN
+    function verifyStudentCSN() {
+      hideAuthNotice();
+      const csnInput = document.getElementById('inputCSN').value.trim();
+      if (!csnInput || csnInput.length < 5) {
+        showAuthNotice("Please enter your valid 10-digit CSN number.");
+        return;
+      }
+
+      const match = students.find(s => s.csn === csnInput);
+      if (!match) {
+        showAuthNotice("CSN not found in Division B roster. Please re-check.");
+        return;
+      }
+
+      currentAuthStudent = match;
+      const savedPin = localStorage.getItem(`pin_${match.csn}`);
+
+      document.getElementById('csnStepBox').classList.add('hidden');
+
+      if (!savedPin) {
+        // First Time User Flow
+        document.getElementById('firstTimeNameBadge').textContent = match.name;
+        document.getElementById('firstTimeDetailsBadge').textContent = `Roll No: ${match.roll} • CSN: ${match.csn} • ${match.branch}`;
+        document.getElementById('firstTimePinBox').classList.remove('hidden');
+      } else {
+        // Returning User Flow
+        document.getElementById('returningNameBadge').textContent = match.name;
+        document.getElementById('returningDetailsBadge').textContent = `Roll No: ${match.roll} • CSN: ${match.csn}`;
+        document.getElementById('returningPinBox').classList.remove('hidden');
+      }
+    }
+
+    // Step 2A: Finalize New PIN (First Time Setup)
+    function finalizeNewPin() {
+      const p1 = document.getElementById('newStudentPin').value.trim();
+      const p2 = document.getElementById('confirmStudentPin').value.trim();
+
+      if (!p1 || p1.length !== 4 || isNaN(p1)) {
+        showAuthNotice("PIN must be exactly 4 numeric digits.");
+        return;
+      }
+      if (p1 !== p2) {
+        showAuthNotice("PIN confirmation does not match. Try again.");
+        return;
+      }
+
+      localStorage.setItem(`pin_${currentAuthStudent.csn}`, p1);
+      completeLoginSession(currentAuthStudent, 'student');
+    }
+
+    // Step 2B: Returning User PIN Verification
+    function authenticateReturningStudent() {
+      const pin = document.getElementById('loginStudentPin').value.trim();
+      const actualPin = localStorage.getItem(`pin_${currentAuthStudent.csn}`);
+
+      if (pin === actualPin) {
+        completeLoginSession(currentAuthStudent, 'student');
+      } else {
+        showAuthNotice("Incorrect 4-digit PIN. If forgotten, ask Prof. Jayashree to reset it.");
+      }
+    }
+
+    function resetStudentAuthFlow() {
+      document.getElementById('firstTimePinBox').classList.add('hidden');
+      document.getElementById('returningPinBox').classList.add('hidden');
+      document.getElementById('csnStepBox').classList.remove('hidden');
+      document.getElementById('inputCSN').value = '';
+      hideAuthNotice();
+    }
+
+    // Faculty Authentication
+    function authenticateFaculty() {
+      const pin = document.getElementById('inputFacultyPin').value.trim();
+      const storedFacultyPin = localStorage.getItem('bec_faculty_pin') || '1010';
+
+      if (pin === storedFacultyPin) {
+        const facultyObj = {
+          name: "Prof. Dr. Jayashree G Ghantimath",
+          role: "Faculty In-Charge",
+          csn: "FACULTY-PHYSICS-01"
+        };
+        completeLoginSession(facultyObj, 'faculty');
+      } else {
+        showAuthNotice("Invalid Administrative PIN. Default is 1010.");
+      }
+    }
+
+    function completeLoginSession(userObj, role) {
+      currentUserSession = { ...userObj, role };
+      document.getElementById('authGate').classList.add('hidden');
+      
+      document.getElementById('sessionUserName').textContent = userObj.name;
+      document.getElementById('sessionUserRole').textContent = role === 'faculty' ? 'Faculty Admin' : `Roll ${userObj.roll} • ${userObj.csn}`;
+      
+      if (role === 'faculty') {
+        document.getElementById('facultyAddMemberBtn').classList.remove('hidden');
+      }
+
+      // Initialize components
+      renderRosterTable();
+      initPlanckChart();
+      calculatePlanck();
+      initLeaderboard();
+      initKaTeXDerivations();
+    }
+
+    function promptLogout() {
+      if (confirm("Do you want to switch user or log out of Room 101?")) {
+        currentUserSession = null;
+        document.getElementById('authGate').classList.remove('hidden');
+        resetStudentAuthFlow();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 3. NAVIGATION CONTROLLER
+    // -------------------------------------------------------------
+    function navigateTo(viewId) {
+      const views = ['dashboard', 'labs', 'quiz', 'repository', 'roster', 'chat', 'tutor'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        const tabBtn = document.getElementById(`nav-${v}`);
+        if (el) el.classList.add('hidden');
+        if (tabBtn) {
+          tabBtn.className = "nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
+        }
+      });
+
+      const targetView = document.getElementById(`view-${viewId}`);
+      const targetBtn = document.getElementById(`nav-${viewId}`);
+      if (targetView) targetView.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.className = "nav-tab px-3 py-1.5 rounded-lg text-white bg-indigo-600 transition-all";
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // -------------------------------------------------------------
+    // 4. ROSTER & FACULTY PIN RESET MANAGER
+    // -------------------------------------------------------------
+    function renderRosterTable(filter = '') {
+      const tbody = document.getElementById('rosterTableBody');
+      tbody.innerHTML = '';
+
+      const query = filter.toLowerCase();
+      const filtered = students.filter(s => 
+        s.name.toLowerCase().includes(query) ||
+        s.roll.toString().includes(query) ||
+        s.csn.includes(query)
+      );
+
+      filtered.forEach(s => {
+        const isPinSet = !!localStorage.getItem(`pin_${s.csn}`);
+        const attendance = localStorage.getItem(`att_${s.csn}`) || "96%";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/[0.02] transition-colors";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono font-bold text-white">${s.roll.toString().padStart(2, '0')}</td>
+          <td class="py-3 px-4 font-semibold text-white">
+            ${s.name} ${s.roll === 2 ? '<span class="ml-1 text-[10px] px-1.5 py-0.2 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">Developer</span>' : ''}
+          </td>
+          <td class="py-3 px-4 font-mono text-cyan-400">${s.csn}</td>
+          <td class="py-3 px-4">${s.branch}</td>
+          <td class="py-3 px-4 font-mono text-emerald-400">${attendance}</td>
+          <td class="py-3 px-4">
+            ${isPinSet 
+              ? '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Configured</span>' 
+              : '<span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20">Unset</span>'}
+          </td>
+          <td class="py-3 px-4 text-right">
+            ${currentUserSession && currentUserSession.role === 'faculty' ? `
+              <button onclick="resetPinByFaculty('${s.csn}', '${s.name}')" class="px-2.5 py-1 bg-dark-750 hover:bg-rose-600/30 text-rose-300 rounded border border-white/5 text-[11px] transition-all">
+                Reset PIN
+              </button>
+            ` : '<span class="text-slate-600 text-[11px]">—</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterRosterTable(val) {
+      renderRosterTable(val);
+    }
+
+    function resetPinByFaculty(csn, name) {
+      if (confirm(`Do you want to reset the private PIN for ${name} (${csn})? They will set a new PIN on next login.`)) {
+        localStorage.removeItem(`pin_${csn}`);
+        alert(`PIN for ${name} has been reset.`);
+        renderRosterTable();
+      }
+    }
+
+    function promptAddNewStudent() {
+      const name = prompt("Enter Student Full Name:");
+      if (!name) return;
+      const csn = prompt("Enter 10-Digit CSN Number:");
+      if (!csn) return;
+      const newRoll = students.length + 1;
+
+      students.push({
+        roll: newRoll,
+        name: name.toUpperCase(),
+        csn: csn,
+        gender: "Male",
+        branch: "CSE"
+      });
+      localStorage.setItem('bec_students_roster', JSON.stringify(students));
+      renderRosterTable();
+      alert(`Student ${name} added with Roll ${newRoll}`);
+    }
+
+    // -------------------------------------------------------------
+    // 5. EXPERIMENT #01 SIMULATION: PLANCK'S CONSTANT
+    // -------------------------------------------------------------
+    let planckChartInstance = null;
+
+    function initPlanckChart() {
+      const ctx = document.getElementById('planckChart').getContext('2d');
+      planckChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          datasets: [
+            {
+              label: 'LED Data Points (V0 vs 1/λ)',
+              data: [],
+              borderColor: '#06b6d4',
+              backgroundColor: '#06b6d4',
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              showLine: true,
+              borderWidth: 2,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              type: 'linear',
+              position: 'bottom',
+              title: { display: true, text: 'Inverse Wavelength (1/λ in 10⁶ m⁻¹)', color: '#94a3b8' },
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8' }
+            },
+            y: {
+              title: { display: true, text: 'Knee / Threshold Voltage V0 (Volts)', color: '#94a3b8' },
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8' }
+            }
+          },
+          plugins: {
+            legend: { labels: { color: '#f1f5f9' } }
+          }
+        }
+      });
+    }
+
+    function calculatePlanck() {
+      const v_red = parseFloat(document.getElementById('v0_red').value);
+      const v_yel = parseFloat(document.getElementById('v0_yellow').value);
+      const v_grn = parseFloat(document.getElementById('v0_green').value);
+      const v_blu = parseFloat(document.getElementById('v0_blue').value);
+
+      document.getElementById('v0_red_val').textContent = v_red.toFixed(2) + ' V';
+      document.getElementById('v0_yellow_val').textContent = v_yel.toFixed(2) + ' V';
+      document.getElementById('v0_green_val').textContent = v_grn.toFixed(2) + ' V';
+      document.getElementById('v0_blue_val').textContent = v_blu.toFixed(2) + ' V';
+
+      // Wavelengths in meters
+      const leds = [
+        { invL: (1 / (650e-9)) / 1e6, v: v_red },
+        { invL: (1 / (585e-9)) / 1e6, v: v_yel },
+        { invL: (1 / (525e-9)) / 1e6, v: v_grn },
+        { invL: (1 / (470e-9)) / 1e6, v: v_blu }
+      ];
+
+      // Linear regression (Slope)
+      const n = leds.length;
+      let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+      leds.forEach(pt => {
+        sumX += pt.invL;
+        sumY += pt.v;
+        sumXY += (pt.invL * pt.v);
+        sumXX += (pt.invL * pt.invL);
+      });
+
+      const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX); // V / (10^6 m^-1)
+      const actualSlope = slope * 1e-6; // V * m
+
+      const e = 1.602e-19;
+      const c = 3.0e8;
+      const h_exp = (e / c) * actualSlope;
+      const h_standard = 6.626e-34;
+      const error = Math.abs((h_exp - h_standard) / h_standard) * 100;
+
+      document.getElementById('calc_slope').textContent = (actualSlope * 1e6).toFixed(3) + " × 10⁻⁶ V·m";
+      document.getElementById('calc_h').textContent = (h_exp * 1e34).toFixed(3) + " × 10⁻³⁴ J·s";
+      document.getElementById('calc_error').textContent = error.toFixed(2) + "%";
+
+      if (planckChartInstance) {
+        planckChartInstance.data.datasets[0].data = leds.map(p => ({ x: p.invL, y: p.v }));
+        planckChartInstance.update();
+      }
+    }
+
+    // 10 Lab Directory Definition
+    const labDirectory = {
+      2: {
+        title: "Exp 02: Determination of Fermi Energy for a Conductor",
+        desc: "Measurement of electrical resistivity vs. temperature to compute the Fermi energy Ef and Fermi temperature Tf of copper/aluminum.",
+        steps: ["Mount wire in boiling bath", "Record resistance via 4-terminal setup", "Extract carrier concentration n", "Calculate Ef = (h² / 8m) * (3n/π)^(2/3)"]
+      },
+      3: {
+        title: "Exp 03: Wavelength of Laser using Diffraction Grating",
+        desc: "Semiconductor diode laser beam diffraction through grating of known lines per inch (N = 500 lines/mm).",
+        steps: ["Align diode laser perpendicular to grating", "Measure screen distance D and central fringe distance x", "Calculate sin θ = x / √(x² + D²)", "Determine λ = sin θ / (m · N)"]
+      },
+      4: {
+        title: "Exp 04: Numerical Aperture & Acceptance Angle of Optical Fiber",
+        desc: "Evaluating the light-gathering capacity of multimode step-index optical fiber using spot-circle diameter.",
+        steps: ["Propagate laser through fiber patch cable", "Record circular light cone diameter W at distance L", "Compute NA = W / √(4L² + W²)", "Determine acceptance angle θ₀ = sin⁻¹(NA)"]
+      },
+      5: {
+        title: "Exp 05: Energy Gap of Semiconductor by Four-Probe Method",
+        desc: "Temperature variation of resistivity in germanium crystal to extract the band gap Eg.",
+        steps: ["Pass constant current through outer two probes", "Measure potential drop across inner two probes", "Plot ln(ρ) vs 10³/T", "Band gap Eg = 2k · Slope"]
+      },
+      6: {
+        title: "Exp 06: Frequency Response in Series LCR Circuit",
+        desc: "Study of resonance, resonant frequency f0, bandwidth, and quality factor Q in series circuit.",
+        steps: ["Sweep audio frequency generator 100 Hz - 20 kHz", "Record circuit current across series resistor", "Identify maximum current resonance peak", "Compute Q = f₀ / Bandwidth"]
+      },
+      7: {
+        title: "Exp 07: Identification of Passive Components in Black Box",
+        desc: "Deducing values of unknown resistors, capacitors, and inductors sealed inside test chassis.",
+        steps: ["Apply DC voltage to detect inductive choke vs capacitor", "Apply AC signal to measure impedance Z", "Calculate L = √(Z² - R²) / 2πf", "Determine C = 1 / (2πf Xc)"]
+      },
+      8: {
+        title: "Exp 08: Photodiode I-V Characteristics & Responsivity",
+        desc: "Reverse-bias current characteristics under variable illumination intensities.",
+        steps: ["Connect photodiode in reverse bias with microammeter", "Vary optical incident power P_opt", "Measure photocurrent I_p", "Calculate responsivity R = I_p / P_opt (A/W)"]
+      },
+      9: {
+        title: "Exp 09: Dielectric Constant of Capacitor (Charging/Discharging)",
+        desc: "Transient charging time constant τ = RC analysis to deduce dielectric permittivity.",
+        steps: ["Charge capacitor through high resistance R", "Observe exponential voltage decay", "Measure time taken to drop to 0.368 V₀", "Deduce dielectric constant ε_r"]
+      },
+      10: {
+        title: "Exp 10: Energy Gap of Semiconductor Diode",
+        desc: "Reverse saturation current temperature dependence to determine forbidden energy gap.",
+        steps: ["Heat semiconductor diode in oil bath", "Record reverse saturation current I₀ across 30°C - 80°C", "Plot log₁₀(I₀) vs 1/T", "Deduce semiconductor bandgap Eg"]
+      }
+    };
+
+    function loadSelectedLab(val) {
+      if (val === '1') {
+        document.getElementById('lab-exp-1').classList.remove('hidden');
+        document.getElementById('lab-exp-other').classList.add('hidden');
+      } else {
+        document.getElementById('lab-exp-1').classList.add('hidden');
+        const container = document.getElementById('lab-exp-other');
+        container.classList.remove('hidden');
+        const lab = labDirectory[val];
+        document.getElementById('otherLabTitle').textContent = lab.title;
+        document.getElementById('otherLabDesc').textContent = lab.desc;
+        const list = document.getElementById('otherLabSteps');
+        list.innerHTML = lab.steps.map(s => `<li>${s}</li>`).join('');
+      }
+    }
+
+    function projectorVivaModal(labNum) {
+      alert(`[Room 101 Smartboard Projection Active]\nLaunching high-visibility Viva Voce questions for Laboratory Experiment #${labNum} on the classroom screen.`);
+    }
+
+    // -------------------------------------------------------------
+    // 6. LIVE QUIZ ENGINE WITH MILLISECOND CHRONOMETER
+    // -------------------------------------------------------------
+    const quizQuestionBank = [
+      {
+        unit: "UNIT I • Assignment Q05",
+        text: "Determine the de Broglie wavelength associated with an electron moving with velocity $v = 2.19 \\times 10^6 \\text{ m/s}$. ($m_e = 9.11 \\times 10^{-31} \\text{ kg}$, $h = 6.63 \\times 10^{-34} \\text{ J}\\cdot\\text{s}$)",
+        options: [
+          { text: "3.31 × 10⁻¹⁰ m (0.331 nm)", correct: true },
+          { text: "1.31 × 10⁻¹⁴ m", correct: false },
+          { text: "4.53 × 10⁻¹³ m", correct: false },
+          { text: "2.74 × 10⁻¹¹ m", correct: false }
+        ],
+        explanation: "λ = h / (m · v) = (6.63 × 10⁻³⁴) / (9.11 × 10⁻³¹ × 2.19 × 10⁶) = 3.32 × 10⁻¹⁰ m."
+      },
+      {
+        unit: "UNIT I • Assignment Q07",
+        text: "Estimate the potential difference through which a proton is accelerated so that its de Broglie wavelength becomes $1\\text{ Å}$ ($10^{-10}\\text{ m}$). ($m_p = 1.673 \\times 10^{-27}\\text{ kg}$)",
+        options: [
+          { text: "0.082 V", correct: true },
+          { text: "0.820 V", correct: false },
+          { text: "12.27 V", correct: false },
+          { text: "0.025 V", correct: false }
+        ],
+        explanation: "λ = h / √(2 m_p e V)  ⇒  V = h² / (2 m_p e λ²) = 0.082 Volts."
+      },
+      {
+        unit: "UNIT II • Assignment Q38",
+        text: "The critical magnetic field of niobium is $1 \\times 10^5\\text{ A/m}$ at $8\\text{ K}$ and $2 \\times 10^5\\text{ A/m}$ at $0\\text{ K}$. Calculate its critical temperature ($T_c$).",
+        options: [
+          { text: "11.3 K", correct: true },
+          { text: "7.18 K", correct: false },
+          { text: "9.2 K", correct: false },
+          { text: "4.2 K", correct: false }
+        ],
+        explanation: "H_c(T) = H_c(0)[1 - (T/T_c)²]  ⇒  10⁵ = 2×10⁵[1 - (8/T_c)²]  ⇒  (8/T_c)² = 0.5  ⇒  T_c = 8 / √0.5 = 11.31 K."
+      },
+      {
+        unit: "UNIT II • Assignment Q40",
+        text: "Calculate the critical current for a wire of lead having a diameter of $1\\text{ mm}$ at $4.2\\text{ K}$ ($T_c = 7.18\\text{ K}$, $H_c(0) = 6.5 \\times 10^4\\text{ A/m}$).",
+        options: [
+          { text: "134.5 A", correct: true },
+          { text: "85.2 A", correct: false },
+          { text: "210.0 A", correct: false },
+          { text: "42.8 A", correct: false }
+        ],
+        explanation: "H_c(4.2) = 6.5×10⁴[1 - (4.2/7.18)²] = 4.28 × 10⁴ A/m. Silsbee rule: I_c = 2π r H_c = 2π(0.5×10⁻³)(4.28×10⁴) = 134.5 A."
+      },
+      {
+        unit: "UNIT I • Assignment Q19",
+        text: "An electron is bound in a 1D infinite potential well of width $1\\text{ Å}$. Find the ground state energy $E_1$ in eV.",
+        options: [
+          { text: "37.64 eV", correct: true },
+          { text: "150.54 eV", correct: false },
+          { text: "5.6 meV", correct: false },
+          { text: "341.37 eV", correct: false }
+        ],
+        explanation: "E₁ = h² / (8 m a²) = (6.63×10⁻³⁴)² / (8 × 9.11×10⁻³¹ × 10⁻²⁰) = 6.03×10⁻¹⁸ J = 37.64 eV."
+      }
+    ];
+
+    let currentQIndex = 0;
+    let quizStartTime = null;
+    let quizTimerInterval = null;
+    let userPoints = 0;
+
+    function renderCurrentQuestion() {
+      const q = quizQuestionBank[currentQIndex];
+      document.getElementById('quizBadgeUnit').textContent = q.unit;
+      document.getElementById('quizQuestionText').innerHTML = q.text;
+      document.getElementById('currentQNum').textContent = currentQIndex + 1;
+      
+      const optContainer = document.getElementById('quizOptionsContainer');
+      optContainer.innerHTML = '';
+      document.getElementById('quizFeedbackBox').classList.add('hidden');
+      document.getElementById('btnNextQuestion').classList.add('hidden');
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-3.5 rounded-xl bg-dark-850 hover:bg-dark-750 border border-white/5 hover:border-indigo-500/40 text-xs text-white transition-all flex items-center justify-between";
+        btn.innerHTML = `<span><strong>${String.fromCharCode(65 + idx)}.</strong> ${opt.text}</span> <i class="fa-regular fa-circle text-slate-500"></i>`;
+        btn.onclick = () => submitQuizAnswer(opt.correct, btn, q.explanation);
+        optContainer.appendChild(btn);
+      });
+
+      // Restart chronometer
+      quizStartTime = performance.now();
+      clearInterval(quizTimerInterval);
+      quizTimerInterval = setInterval(() => {
+        const elapsed = (performance.now() - quizStartTime) / 1000;
+        document.getElementById('quizTimer').textContent = elapsed.toFixed(2) + "s";
+      }, 50);
+    }
+
+    function submitQuizAnswer(isCorrect, buttonElem, explanation) {
+      clearInterval(quizTimerInterval);
+      const elapsed = ((performance.now() - quizStartTime) / 1000).toFixed(2);
+
+      const fBox = document.getElementById('quizFeedbackBox');
+      fBox.classList.remove('hidden');
+
+      // Disable all options
+      const allButtons = document.querySelectorAll('#quizOptionsContainer button');
+      allButtons.forEach(b => b.disabled = true);
+
+      if (isCorrect) {
+        buttonElem.classList.add('bg-emerald-600/30', 'border-emerald-500', 'text-emerald-300');
+        fBox.className = "p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-xs text-emerald-300 space-y-1";
+        const speedBonus = Math.max(10, Math.floor(100 - (elapsed * 5)));
+        userPoints += speedBonus;
+        document.getElementById('userScore').textContent = userPoints + " Pts";
+        fBox.innerHTML = `<strong><i class="fa-solid fa-check-circle"></i> Correct! Answered in ${elapsed}s (+${speedBonus} Pts)</strong><p class="text-slate-300 mt-1">${explanation}</p>`;
+      } else {
+        buttonElem.classList.add('bg-rose-600/30', 'border-rose-500', 'text-rose-300');
+        fBox.className = "p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs text-rose-300 space-y-1";
+        fBox.innerHTML = `<strong><i class="fa-solid fa-times-circle"></i> Incorrect.</strong><p class="text-slate-300 mt-1">${explanation}</p>`;
+      }
+
+      document.getElementById('btnNextQuestion').classList.remove('hidden');
+    }
+
+    function nextQuizQuestion() {
+      currentQIndex = (currentQIndex + 1) % quizQuestionBank.length;
+      renderCurrentQuestion();
+    }
+
+    function initLeaderboard() {
+      const standings = [
+        { name: "Manojna Mahesh Palleda", roll: 2, score: 380, time: "1.42s" },
+        { name: "Mallikarjun C Dunagi", roll: 1, score: 360, time: "1.65s" },
+        { name: "Preeti Vithal Bagewadi", roll: 18, score: 345, time: "1.89s" },
+        { name: "Prajwal R Gangal", roll: 10, score: 320, time: "2.10s" },
+        { name: "Rakshita Walikar", roll: 28, score: 310, time: "2.25s" }
+      ];
+
+      const container = document.getElementById('leaderboardList');
+      container.innerHTML = standings.map((st, i) => `
+        <div class="p-2.5 rounded-xl bg-dark-850/80 border border-white/5 flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2.5">
+            <span class="w-5 h-5 rounded-full ${i===0?'bg-amber-500/20 text-amber-400 font-bold':'bg-dark-750 text-slate-400'} flex items-center justify-center font-mono text-[10px]">
+              ${i+1}
+            </span>
+            <div>
+              <div class="font-semibold text-white truncate max-w-[130px]">${st.name}</div>
+              <div class="text-[10px] text-slate-400">Roll ${st.roll} • Latency: ${st.time}</div>
+            </div>
+          </div>
+          <span class="font-mono font-bold text-amber-400">${st.score} pts</span>
+        </div>
+      `).join('');
+    }
+
+    // -------------------------------------------------------------
+    // 7. WHATSAPP & TELEGRAM CLASSROOM SHARING
+    // -------------------------------------------------------------
+    function shareOnWhatsApp() {
+      const shareText = encodeURIComponent(
+        "AI Classroom Hub: Engineering Physics (Room 101)\n" +
+        "BVVS BEC Bagalkot - Division B\n" +
+        "Faculty: Prof. Dr. Jayashree G Ghantimath\n" +
+        "Access simulations, live quiz, and syllabus here: " + window.location.href
+      );
+      window.open(`https://api.whatsapp.com/send?text=${shareText}`, '_blank');
+    }
+
+    function triggerSmartboardMode() {
+      alert("Room 101 Smartboard Mode Activated.\nHigh-contrast presentation view configured for projector resolution.");
+    }
+
+    // -------------------------------------------------------------
+    // 8. MESSAGING & AI PHYSICS TUTOR CHAT
+    // -------------------------------------------------------------
+    let activeChatChannel = 'group';
+
+    function switchChatChannel(ch) {
+      activeChatChannel = ch;
+      const bG = document.getElementById('btnChatGroup');
+      const bF = document.getElementById('btnChatFaculty');
+      if (ch === 'group') {
+        bG.className = "px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold";
+        bF.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white";
+      } else {
+        bF.className = "px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold";
+        bG.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white";
+      }
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatTextInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const container = document.getElementById('chatMessagesStream');
+      const user = currentUserSession ? currentUserSession.name : "Student";
+      
+      const msgDiv = document.createElement('div');
+      msgDiv.className = "flex items-start space-x-3 justify-end";
+      msgDiv.innerHTML = `
+        <div class="space-y-1 max-w-lg text-right">
+          <div class="flex items-center justify-end space-x-2">
+            <span class="text-[10px] text-slate-500">Just now</span>
+            <span class="text-xs font-bold text-emerald-400">${user}</span>
+          </div>
+          <div class="p-3 bg-emerald-950/40 rounded-2xl rounded-tr-none border border-emerald-500/20 text-xs text-slate-200 text-left">
+            ${text}
+          </div>
+        </div>
+      `;
+      container.appendChild(msgDiv);
+      input.value = '';
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendTutorQuery() {
+      const input = document.getElementById('tutorTextInput');
+      const q = input.value.trim();
+      if (!q) return;
+      askPresetPrompt(q);
+      input.value = '';
+    }
+
+    function askPresetPrompt(promptText) {
+      const container = document.getElementById('tutorMessagesStream');
+      
+      // User message
+      const uDiv = document.createElement('div');
+      uDiv.className = "flex items-start space-x-3 justify-end";
+      uDiv.innerHTML = `
+        <div class="space-y-1 max-w-lg text-right">
+          <div class="text-xs font-bold text-slate-300">You</div>
+          <div class="p-3 bg-purple-950/30 rounded-2xl rounded-tr-none border border-purple-500/20 text-xs text-slate-200 text-left">
+            ${promptText}
+          </div>
+        </div>
+      `;
+      container.appendChild(uDiv);
+
+      // AI Response generator
+      setTimeout(() => {
+        const aiDiv = document.createElement('div');
+        aiDiv.className = "flex items-start space-x-3";
+        let responseContent = "";
+
+        if (promptText.includes("Schrödinger")) {
+          responseContent = `
+            <div class="space-y-2">
+              <strong class="text-purple-300">Derivation of 1D Time-Independent Schrödinger Equation:</strong>
+              <p>1. Total Energy of a particle is $E = K + V = \\frac{p^2}{2m} + V(x)$.</p>
+              <p>2. Using de Broglie relation $\\lambda = \\frac{h}{p} = \\frac{2\\pi\\hbar}{p}$, momentum is $p = \\hbar k$.</p>
+              <p>3. Representing matter wave as $\\psi(x) = A e^{i k x}$, the second derivative gives $\\frac{d^2\\psi}{dx^2} = -k^2\\psi = -\\frac{p^2}{\\hbar^2}\\psi$.</p>
+              <p>4. Rearranging: $p^2\\psi = -\\hbar^2 \\frac{d^2\\psi}{dx^2}$.</p>
+              <p>5. Substitute into $(E - V)\\psi = \\frac{p^2}{2m}\\psi$ to obtain the final equation:</p>
+              <div class="p-2 bg-dark-900 rounded font-mono text-cyan-400">
+                d²ψ/dx² + [2m(E - V)/ℏ²] ψ = 0
+              </div>
+            </div>
+          `;
+        } else if (promptText.includes("Meissner")) {
+          responseContent = `
+            <div class="space-y-2">
+              <strong class="text-purple-300">Meissner Effect & Silsbee's Rule:</strong>
+              <p>• <strong>Meissner Effect:</strong> When cooled below critical temperature $T_c$ in a magnetic field, a superconductor expels all magnetic flux lines ($B = 0$). It acts as an ideal diamagnet (susceptibility $\\chi = -1$).</p>
+              <p>• <strong>Silsbee's Rule:</strong> A superconductor loses zero-resistance if the current passing through it generates a surface magnetic field equal to the critical magnetic field: $I_c = 2\\pi r H_c$.</p>
+            </div>
+          `;
+        } else {
+          responseContent = `
+            <div class="space-y-2">
+              <strong class="text-purple-300">Numerical Solution:</strong>
+              <p>For a proton of mass $m_p = 1.673 \\times 10^{-27}\\text{ kg}$ with $\\lambda = 1\\text{ Å} = 10^{-10}\\text{ m}$:</p>
+              <p>Accelerating Potential: $V = \\frac{h^2}{2 m_p e \\lambda^2}$</p>
+              <p>$V = \\frac{(6.63 \\times 10^{-34})^2}{2 \\times (1.673 \\times 10^{-27}) \\times (1.602 \\times 10^{-19}) \\times (10^{-10})^2} = 0.082\\text{ Volts}$.</p>
+            </div>
+          `;
+        }
+
+        aiDiv.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+            AI
+          </div>
+          <div class="space-y-1 max-w-xl">
+            <div class="text-xs font-bold text-purple-400">BEC AI Physics Engine</div>
+            <div class="p-4 bg-dark-850 rounded-2xl rounded-tl-none border border-white/5 text-xs text-slate-200 leading-relaxed">
+              ${responseContent}
+            </div>
+          </div>
+        `;
+        container.appendChild(aiDiv);
+        container.scrollTop = container.scrollHeight;
+      }, 500);
+    }
+
+    // -------------------------------------------------------------
+    // 9. REPOSITORY FILE UPLOADER
+    // -------------------------------------------------------------
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const list = document.getElementById('uploadedFilesList');
+      const item = document.createElement('div');
+      item.className = "p-3 bg-dark-850/80 rounded-xl border border-indigo-500/30 flex items-center justify-between";
+      item.innerHTML = `
+        <div class="flex items-center space-x-3">
+          <i class="fa-solid fa-file text-cyan-400 text-base"></i>
+          <div>
+            <div class="font-semibold text-white">${file.name}</div>
+            <div class="text-[10px] text-slate-400">Uploaded by ${currentUserSession ? currentUserSession.name : 'Authorized User'} • ${(file.size/1024).toFixed(1)} KB</div>
+          </div>
+        </div>
+        <span class="text-emerald-400 font-mono text-[11px]">Synced to Room 101</span>
+      `;
+      list.prepend(item);
+      alert(`File "${file.name}" uploaded to course repository.`);
+    }
+
+    function initKaTeXDerivations() {
+      renderCurrentQuestion();
+    }
+
+    // Boot trigger
+    window.addEventListener('DOMContentLoaded', () => {
+      // Clean start at auth gate
+    });
+  </script>
+</body>
+</html>
