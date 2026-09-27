@@ -6,7 +6,8 @@
   <title>AI Classroom Hub | BVVS BEC Bagalkot - Engineering Physics</title>
   
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">refreshProgressDashboard();
+  </script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <!-- Chart.js for Physics Lab Plots -->
@@ -370,6 +371,23 @@
     </div>
   </div>
 
+  <!-- ================= FOLDER CONTENTS MODAL ================= -->
+  <div id="folderContentsModal" class="fixed inset-0 z-[55] hidden flex items-center justify-center p-4 bg-dark-900/90 backdrop-blur-md">
+    <div class="glass-card w-full max-w-3xl max-h-[88vh] rounded-2xl border border-amber-500/20 shadow-2xl flex flex-col overflow-hidden">
+      <div class="px-5 py-4 bg-dark-850 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0"><i class="fa-solid fa-folder-open"></i></div>
+          <div class="min-w-0">
+            <h3 id="folderContentsTitle" class="text-sm font-bold text-white truncate">Folder</h3>
+            <p id="folderContentsSubtitle" class="text-[11px] text-slate-400">Folder contents</p>
+          </div>
+        </div>
+        <button onclick="closeFolderContents()" class="w-8 h-8 rounded-lg bg-dark-750 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-white/5 flex items-center justify-center shrink-0"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="folderContentsList" class="p-5 overflow-y-auto custom-scroll space-y-2"></div>
+    </div>
+  </div>
+
   <!-- ================= PIN CHANGE MODAL ================= -->
   <div id="pinChangeModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-dark-900/90 backdrop-blur-md">
     <div class="glass-card max-w-sm w-full p-6 rounded-2xl border border-white/10 shadow-2xl space-y-4">
@@ -512,6 +530,61 @@
             <div class="text-[11px] text-slate-400 mt-1">Admin Override Enabled</div>
           </div>
         </div>
+
+      <!-- ================= STUDENT PROGRESS DASHBOARD ================= -->
+      <section id="studentProgressSection" class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-emerald-400"></i> My Learning Progress
+            </h2>
+            <p id="progressSubtitle" class="text-xs text-slate-400">Your Physics learning activity across labs, quizzes and course resources.</p>
+          </div>
+          <button onclick="refreshProgressDashboard()" class="px-3 py-1.5 rounded-lg bg-dark-750 hover:bg-dark-700 text-slate-300 text-xs border border-white/10">
+            <i class="fa-solid fa-rotate mr-1"></i>Refresh
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-card p-4 rounded-xl border border-white/5">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400">Labs Completed</div>
+            <div id="progressLabsValue" class="text-2xl font-extrabold text-cyan-400 mt-1 font-mono">0 / 10</div>
+            <div id="progressLabsBar" class="h-1.5 bg-dark-750 rounded-full mt-3 overflow-hidden"><div class="h-full bg-cyan-500 rounded-full" style="width:0%"></div></div>
+          </div>
+          <div class="glass-card p-4 rounded-xl border border-white/5">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400">Quiz Questions</div>
+            <div id="progressQuizValue" class="text-2xl font-extrabold text-indigo-400 mt-1 font-mono">0</div>
+            <div class="text-[11px] text-slate-500 mt-1">Attempted</div>
+          </div>
+          <div class="glass-card p-4 rounded-xl border border-white/5">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400">Accuracy</div>
+            <div id="progressAccuracyValue" class="text-2xl font-extrabold text-emerald-400 mt-1 font-mono">—</div>
+            <div id="progressAccuracyHint" class="text-[11px] text-slate-500 mt-1">No quiz attempts yet</div>
+          </div>
+          <div class="glass-card p-4 rounded-xl border border-white/5">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400">Quiz Points</div>
+            <div id="progressPointsValue" class="text-2xl font-extrabold text-amber-400 mt-1 font-mono">0</div>
+            <div class="text-[11px] text-slate-500 mt-1">Current total</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="glass-card p-5 rounded-xl border border-white/5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-flask text-cyan-400 mr-2"></i>Lab Progress</h3>
+              <span id="progressLabPercent" class="text-[11px] text-cyan-300 font-mono">0%</span>
+            </div>
+            <div id="progressLabList" class="space-y-2 max-h-52 overflow-y-auto custom-scroll pr-1"></div>
+          </div>
+          <div class="glass-card p-5 rounded-xl border border-white/5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-bolt text-amber-400 mr-2"></i>Recent Activity</h3>
+              <span class="text-[11px] text-slate-500">This browser</span>
+            </div>
+            <div id="progressActivityList" class="space-y-2 max-h-52 overflow-y-auto custom-scroll pr-1"></div>
+          </div>
+        </div>
+      </section>
       </section>
 
       <!-- ================= VIEW 2: 10 LABS ACCURATE SOLVER ================= -->
@@ -639,9 +712,12 @@
 
               <div class="flex justify-between items-center pt-2">
                 <span class="text-xs text-slate-400">Question <span id="currentQNum">1</span> of <span id="totalQNum">0</span></span>
-                <button onclick="nextQuizQuestion()" id="btnNextQuestion" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all">
-                  Next Problem <i class="fa-solid fa-arrow-right ml-1"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                  <button onclick="skipQuizQuestion()" id="btnSkipQuestion" class="px-4 py-2 bg-dark-750 hover:bg-dark-700 text-slate-300 rounded-xl text-xs font-semibold border border-white/10 transition-all">Skip <i class="fa-solid fa-forward ml-1"></i></button>
+                  <button onclick="nextQuizQuestion()" id="btnNextQuestion" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all">
+                    Next Problem <i class="fa-solid fa-arrow-right ml-1"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -672,16 +748,16 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="glass-card p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-3 relative">
+          <div class="glass-card p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-3 relative cursor-pointer hover:border-amber-500/30 transition-all" onclick="openFolderContents('syllabus')" class="cursor-pointer hover:border-amber-500/30 transition-all">
             <div class="flex items-center justify-between">
               <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
                 <i class="fa-solid fa-folder-closed"></i>
               </div>
               <div class="flex items-center gap-1.5">
-                <button onclick="triggerFolderUpload('syllabus')" title="Upload file to Syllabus" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
+                <button onclick="event.stopPropagation(); triggerFolderUpload('syllabus')" title="Upload file to Syllabus" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
                   <i class="fa-solid fa-plus text-xs"></i>
                 </button>
-                <button onclick="addFolderUrl('syllabus')" title="Add URL to Syllabus" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
+                <button onclick="event.stopPropagation(); addFolderUrl('syllabus')" title="Add URL to Syllabus" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
                   <i class="fa-solid fa-link text-xs"></i>
                 </button>
               </div>
@@ -695,16 +771,16 @@
             </div>
           </div>
 
-          <div class="glass-card p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-3 relative">
+          <div class="glass-card p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-3 relative cursor-pointer hover:border-amber-500/30 transition-all" onclick="openFolderContents('assignments')" class="cursor-pointer hover:border-amber-500/30 transition-all">
             <div class="flex items-center justify-between">
               <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
                 <i class="fa-solid fa-folder-closed"></i>
               </div>
               <div class="flex items-center gap-1.5">
-                <button onclick="triggerFolderUpload('assignments')" title="Upload file to Assignments" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
+                <button onclick="event.stopPropagation(); triggerFolderUpload('assignments')" title="Upload file to Assignments" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
                   <i class="fa-solid fa-plus text-xs"></i>
                 </button>
-                <button onclick="addFolderUrl('assignments')" title="Add URL to Assignments" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
+                <button onclick="event.stopPropagation(); addFolderUrl('assignments')" title="Add URL to Assignments" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
                   <i class="fa-solid fa-link text-xs"></i>
                 </button>
               </div>
@@ -718,16 +794,16 @@
             </div>
           </div>
 
-          <div class="glass-card p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-3 relative">
+          <div class="glass-card p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-3 relative cursor-pointer hover:border-amber-500/30 transition-all" onclick="openFolderContents('exams')" class="cursor-pointer hover:border-amber-500/30 transition-all">
             <div class="flex items-center justify-between">
               <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
                 <i class="fa-solid fa-folder-closed"></i>
               </div>
               <div class="flex items-center gap-1.5">
-                <button onclick="triggerFolderUpload('exams')" title="Upload file to Exam Sets" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
+                <button onclick="event.stopPropagation(); triggerFolderUpload('exams')" title="Upload file to Exam Sets" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
                   <i class="fa-solid fa-plus text-xs"></i>
                 </button>
-                <button onclick="addFolderUrl('exams')" title="Add URL to Exam Sets" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
+                <button onclick="event.stopPropagation(); addFolderUrl('exams')" title="Add URL to Exam Sets" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
                   <i class="fa-solid fa-link text-xs"></i>
                 </button>
               </div>
@@ -741,16 +817,16 @@
             </div>
           </div>
 
-          <div class="glass-card p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-3 relative">
+          <div class="glass-card p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-3 relative cursor-pointer hover:border-amber-500/30 transition-all" onclick="openFolderContents('labs')" class="cursor-pointer hover:border-amber-500/30 transition-all">
             <div class="flex items-center justify-between">
               <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg">
                 <i class="fa-solid fa-folder-closed"></i>
               </div>
               <div class="flex items-center gap-1.5">
-                <button onclick="triggerFolderUpload('labs')" title="Upload file to Lab Manuals" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
+                <button onclick="event.stopPropagation(); triggerFolderUpload('labs')" title="Upload file to Lab Manuals" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
                   <i class="fa-solid fa-plus text-xs"></i>
                 </button>
-                <button onclick="addFolderUrl('labs')" title="Add URL to Lab Manuals" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
+                <button onclick="event.stopPropagation(); addFolderUrl('labs')" title="Add URL to Lab Manuals" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
                   <i class="fa-solid fa-link text-xs"></i>
                 </button>
               </div>
@@ -1252,6 +1328,35 @@
       alert(`Link "${name.trim()}" added successfully to folder [${folderName}]!`);
     }
 
+    function closeFolderContents() {
+      document.getElementById('folderContentsModal')?.classList.add('hidden');
+    }
+
+    function openFolderContents(category) {
+      const title = getFolderDisplayName(category);
+      const items = uploadedNativeDocs.filter(d => d.category === category);
+      const modal = document.getElementById('folderContentsModal');
+      const list = document.getElementById('folderContentsList');
+      if (!modal || !list) return;
+      document.getElementById('folderContentsTitle').textContent = title;
+      document.getElementById('folderContentsSubtitle').textContent = `${items.length} item${items.length === 1 ? '' : 's'} in this folder`;
+      list.innerHTML = items.length ? items.map(item => {
+        const globalIdx = uploadedNativeDocs.findIndex(d => d.id === item.id);
+        if (item.isUrl) {
+          return `<div class="p-3 bg-dark-850/80 rounded-xl border border-white/5 hover:border-cyan-500/30 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0"><div class="w-9 h-9 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0"><i class="fa-solid fa-link"></i></div><div class="min-w-0"><div class="font-semibold text-white text-xs truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-slate-500 truncate">${escapeHtml(item.url)}</div></div></div>
+            <div class="flex items-center gap-1 shrink-0"><button onclick="openFolderUrlByIndex(${globalIdx})" class="px-2.5 py-1.5 rounded-lg bg-cyan-600/15 text-cyan-300 text-[11px] border border-cyan-500/20"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>Open</button>${currentUserSession && currentUserSession.role === 'faculty' ? `<button onclick="deleteUploadedFile(${globalIdx}); openFolderContents('${category}')" class="p-2 text-rose-400" title="Delete"><i class="fa-solid fa-trash-can"></i></button>` : ''}</div>
+          </div>`;
+        }
+        const icon = (item.type || '').includes('pdf') ? 'fa-file-pdf text-rose-400' : (item.type || '').includes('image') ? 'fa-file-image text-emerald-400' : 'fa-file text-cyan-400';
+        return `<div class="p-3 bg-dark-850/80 rounded-xl border border-white/5 hover:border-indigo-500/30 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0"><div class="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><i class="fa-solid ${icon}"></i></div><div class="min-w-0"><div class="font-semibold text-white text-xs truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-slate-500">${escapeHtml(item.size || 'Document')}</div></div></div>
+          <div class="flex items-center gap-1 shrink-0"><button onclick="viewUploadedFileByIndex(${globalIdx})" class="px-2.5 py-1.5 rounded-lg bg-indigo-600/15 text-indigo-300 text-[11px] border border-indigo-500/20"><i class="fa-solid fa-eye mr-1"></i>View</button>${currentUserSession && currentUserSession.role === 'faculty' ? `<button onclick="deleteUploadedFile(${globalIdx}); openFolderContents('${category}')" class="p-2 text-rose-400" title="Delete"><i class="fa-solid fa-trash-can"></i></button>` : ''}</div>
+        </div>`;
+      }).join('') : `<div class="p-8 text-center rounded-xl bg-dark-850/50 border border-white/5"><i class="fa-solid fa-folder-open text-3xl text-slate-600 mb-3"></i><div class="text-sm font-semibold text-slate-300">This folder is empty</div><div class="text-[11px] text-slate-500 mt-1">Faculty can add documents or URLs using the controls on the folder.</div></div>`;
+      modal.classList.remove('hidden');
+    }
+
     function renderFolderLists() {
       const categories = ['syllabus', 'assignments', 'exams', 'labs'];
       categories.forEach(cat => {
@@ -1305,9 +1410,9 @@
     }
     function renderCustomFolders() {
       const root=document.getElementById('customFoldersGrid'); if(!root)return; const folders=getCustomFolders();
-      root.innerHTML=folders.length ? folders.map(f=>{const count=uploadedNativeDocs.filter(d=>d.category===f.id).length; return `<div class="glass-card p-4 rounded-xl border border-white/10"><div class="flex items-center justify-between"><div class="w-9 h-9 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-folder"></i></div><div class="faculty-only-folder-actions ${currentUserSession?.role==='faculty'?'':'hidden'} flex gap-1"><button onclick="renameCustomFolder('${f.id}')" class="p-1.5 text-slate-400 hover:text-white" title="Rename"><i class="fa-solid fa-pen"></i></button><button onclick="deleteCustomFolder('${f.id}')" class="p-1.5 text-rose-400 hover:text-rose-300" title="Delete"><i class="fa-solid fa-trash"></i></button></div></div><div class="mt-3"><div class="font-semibold text-white text-sm truncate" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div><div class="text-[10px] text-slate-500">${count} item(s)</div></div><div class="grid grid-cols-2 gap-2 mt-3">
-              <button onclick="triggerFolderUpload('${f.id}')" class="faculty-plus-btn ${currentUserSession?.role==='faculty'?'':'hidden'} w-full py-1.5 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-semibold"><i class="fa-solid fa-upload mr-1"></i>Upload</button>
-              <button onclick="addFolderUrl('${f.id}')" class="faculty-plus-btn ${currentUserSession?.role==='faculty'?'':'hidden'} w-full py-1.5 rounded-lg bg-cyan-600/15 border border-cyan-500/30 text-cyan-300 text-[11px] font-semibold"><i class="fa-solid fa-link mr-1"></i>Add URL</button>
+      root.innerHTML=folders.length ? folders.map(f=>{const count=uploadedNativeDocs.filter(d=>d.category===f.id).length; return `<div onclick="openFolderContents('${f.id}')" class="glass-card p-4 rounded-xl border border-white/10 cursor-pointer hover:border-amber-500/30 transition-all"><div class="flex items-center justify-between"><div class="w-9 h-9 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-folder"></i></div><div class="faculty-only-folder-actions ${currentUserSession?.role==='faculty'?'':'hidden'} flex gap-1"><button onclick="event.stopPropagation(); renameCustomFolder('${f.id}')" class="p-1.5 text-slate-400 hover:text-white" title="Rename"><i class="fa-solid fa-pen"></i></button><button onclick="event.stopPropagation(); deleteCustomFolder('${f.id}')" class="p-1.5 text-rose-400 hover:text-rose-300" title="Delete"><i class="fa-solid fa-trash"></i></button></div></div><div class="mt-3"><div class="font-semibold text-white text-sm truncate" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div><div class="text-[10px] text-slate-500">${count} item(s)</div></div><div class="grid grid-cols-2 gap-2 mt-3">
+              <button onclick="event.stopPropagation(); triggerFolderUpload('${f.id}')" class="faculty-plus-btn ${currentUserSession?.role==='faculty'?'':'hidden'} w-full py-1.5 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-semibold"><i class="fa-solid fa-upload mr-1"></i>Upload</button>
+              <button onclick="event.stopPropagation(); addFolderUrl('${f.id}')" class="faculty-plus-btn ${currentUserSession?.role==='faculty'?'':'hidden'} w-full py-1.5 rounded-lg bg-cyan-600/15 border border-cyan-500/30 text-cyan-300 text-[11px] font-semibold"><i class="fa-solid fa-link mr-1"></i>Add URL</button>
             </div></div>`;}).join('') : `<div class="col-span-full text-center text-xs text-slate-500 py-4">No custom folders yet. Faculty can create one above.</div>`;
     }
 
@@ -1930,6 +2035,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
 
     function completeLoginSession(userObj, role) {
       currentUserSession = { ...userObj, role };
+      refreshQuizPlayerStats();
       document.getElementById('authGate').classList.add('hidden');
       
       document.getElementById('sessionUserName').textContent = userObj.name;
@@ -1964,6 +2070,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       renderFolderLists();
       renderCustomFolders();
       renderUploadedFileList();
+      refreshProgressDashboard();
       updateGeminiStatusUI();
       triggerMathRendering();
       trigger3DTransition('dashboard');
@@ -2031,6 +2138,100 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
     }
 
     // -------------------------------------------------------------
+    // STUDENT PROGRESS DASHBOARD
+    // -------------------------------------------------------------
+    const PHYSICS_LAB_NAMES = [
+      "Planck's constant using LEDs",
+      "Fermi energy for a conductor",
+      "Wavelength of a laser",
+      "Numerical aperture of optical fiber",
+      "Energy gap by four probe method",
+      "Frequency response in series LCR",
+      "Passive components in a black box",
+      "I-V characteristics of a photodiode",
+      "Dielectric constant by charging/discharging",
+      "Energy gap of a semiconductor diode"
+    ];
+
+    function getProgressKey() {
+      return currentUserSession && currentUserSession.csn ? `room101_progress_${currentUserSession.csn}` : 'room101_progress_guest';
+    }
+    function getProgressData() {
+      try {
+        const d = JSON.parse(localStorage.getItem(getProgressKey()) || '{}');
+        return { labs: Array.isArray(d.labs) ? d.labs : [], checklists: (d.checklists && typeof d.checklists === 'object') ? d.checklists : {}, quizAttempts: Number(d.quizAttempts || 0), quizCorrect: Number(d.quizCorrect || 0), quizPoints: Number(d.quizPoints || 0), activity: Array.isArray(d.activity) ? d.activity : [] };
+      } catch (e) { return { labs: [], checklists: {}, quizAttempts: 0, quizCorrect: 0, quizPoints: 0, activity: [] }; }
+    }
+    function saveProgressData(d) {
+      try { localStorage.setItem(getProgressKey(), JSON.stringify(d)); } catch (e) {}
+    }
+    function addProgressActivity(text) {
+      const d = getProgressData();
+      d.activity.unshift({ text, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+      d.activity = d.activity.slice(0, 8);
+      saveProgressData(d);
+      refreshProgressDashboard();
+    }
+    function markLabCompleted(labId) {
+      if (!currentUserSession || currentUserSession.role === 'faculty') return;
+      const d = getProgressData();
+      const id = String(labId);
+      if (!d.labs.includes(id)) {
+        d.labs.push(id);
+        saveProgressData(d);
+        addProgressActivity(`Completed Lab ${id.padStart(2,'0')} • ${PHYSICS_LAB_NAMES[Number(id)-1] || 'Physics experiment'}`);
+      }
+    }
+    function recordQuizProgress(isCorrect, points = 0) {
+      if (!currentUserSession || currentUserSession.role === 'faculty') return;
+      const d = getProgressData();
+      d.quizAttempts += 1;
+      if (isCorrect) d.quizCorrect += 1;
+      d.quizPoints += Number(points || 0);
+      saveProgressData(d);
+      addProgressActivity(`${isCorrect ? 'Correct' : 'Incorrect'} quiz answer${points ? ` • +${points} pts` : ''}`);
+    }
+    function setExperimentChecklist(labId, itemIndex, checked) {
+      if (!currentUserSession || currentUserSession.role === 'faculty') return;
+      const d = getProgressData();
+      const id = String(labId);
+      const items = Array.isArray(d.checklists[id]) ? d.checklists[id].slice(0, 3) : [false, false, false];
+      while (items.length < 3) items.push(false);
+      items[itemIndex] = !!checked;
+      d.checklists[id] = items;
+      saveProgressData(d);
+      addProgressActivity(`${checked ? 'Checked' : 'Un-checked'} ${['lab lecture', 'lab manual reading', 'lab journal'][itemIndex]} • Experiment ${id.padStart(2,'0')}`);
+    }
+
+    function refreshProgressDashboard() {
+      const section = document.getElementById('studentProgressSection');
+      if (!section) return;
+      const isFaculty = currentUserSession && currentUserSession.role === 'faculty';
+      section.classList.toggle('hidden', !!isFaculty);
+      if (isFaculty) return;
+      const d = getProgressData();
+      const labCount = PHYSICS_LAB_NAMES.filter((_, i) => { const c=d.checklists[String(i+1)]||[]; return c.length===3 && c.every(Boolean); }).length;
+      const attempts = d.quizAttempts;
+      const accuracy = attempts ? Math.round((d.quizCorrect / attempts) * 100) : null;
+      document.getElementById('progressSubtitle').textContent = 'Your Physics learning activity across labs, quizzes and course resources.';
+      document.getElementById('progressLabsValue').textContent = `${labCount} / 10`;
+      document.getElementById('progressQuizValue').textContent = attempts;
+      document.getElementById('progressAccuracyValue').textContent = accuracy === null ? '—' : `${accuracy}%`;
+      document.getElementById('progressAccuracyHint').textContent = attempts ? `${d.quizCorrect} correct of ${attempts}` : 'No quiz attempts yet';
+      document.getElementById('progressPointsValue').textContent = d.quizPoints;
+      document.getElementById('progressLabPercent').textContent = `${Math.round((labCount / 10) * 100)}%`;
+      const bar = document.querySelector('#progressLabsBar > div');
+      if (bar) bar.style.width = `${Math.round((labCount / 10) * 100)}%`;
+      document.getElementById('progressLabList').innerHTML = PHYSICS_LAB_NAMES.map((name, i) => {
+        const id = String(i + 1);
+        const checks = Array.isArray(d.checklists[id]) ? d.checklists[id] : [false, false, false];
+        const labels = ['Lab lecture', 'Lab manual reading', 'Lab journal'];
+        return `<div class="p-3 rounded-lg bg-dark-850/60 border border-white/5 space-y-2"><div class="text-xs font-semibold text-slate-200">${String(i+1).padStart(2,'0')}. ${escapeHtml(name)}</div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2">${labels.map((label, j) => `<label class="flex items-center gap-2 text-[11px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-emerald-500" ${checks[j] ? 'checked' : ''} onchange="setExperimentChecklist('${id}', ${j}, this.checked)"><span>${label}</span></label>`).join('')}</div></div>`;
+      }).join('');
+      document.getElementById('progressActivityList').innerHTML = d.activity.length ? d.activity.map(a => `<div class="flex items-start gap-2 p-2 rounded-lg bg-dark-850/60 border border-white/5"><i class="fa-solid fa-clock text-slate-500 mt-0.5"></i><div class="min-w-0"><div class="text-xs text-slate-300">${escapeHtml(a.text)}</div><div class="text-[10px] text-slate-600 mt-0.5">${escapeHtml(a.time)}</div></div></div>`).join('') : `<div class="p-4 text-center text-xs text-slate-500 italic">No activity yet. Complete a lab or attempt a quiz to start your progress timeline.</div>`;
+    }
+
+    // -------------------------------------------------------------
     // 5. NAVIGATION CONTROLLER WITH 3D SPATIAL TRANSITIONS
     // -------------------------------------------------------------
     function navigateTo(viewId) {
@@ -2053,6 +2254,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
 
       trigger3DTransition(viewId);
       triggerMathRendering(targetView);
+      if (viewId === 'dashboard') refreshProgressDashboard();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2098,6 +2300,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
           <td class="py-3 px-4 text-right">
             ${currentUserSession && currentUserSession.role === 'faculty' ? `
               <div class="flex items-center justify-end space-x-1">
+                <button onclick="viewStudentProgress('${s.csn}', '${s.name}')" class="px-2 py-1 bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white rounded border border-cyan-500/30 text-[11px] transition-all">Progress</button>
                 <button onclick="facultyResetPin('${s.csn}', '${s.name}')" class="px-2 py-1 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded border border-rose-500/30 text-[11px] transition-all">
                   Reset
                 </button>
@@ -2110,6 +2313,16 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    function viewStudentProgress(csn, name) {
+      if (!currentUserSession || currentUserSession.role !== 'faculty') return alert('Only Faculty Admin can view student progress.');
+      let d = {};
+      try { d = JSON.parse(localStorage.getItem(`room101_progress_${csn}`) || '{}'); } catch (e) {}
+      const checks = d.checklists && typeof d.checklists === 'object' ? d.checklists : {};
+      const complete = PHYSICS_LAB_NAMES.filter((_, i) => { const c=checks[String(i+1)]||[]; return c.length===3 && c.every(Boolean); }).length;
+      const lines = PHYSICS_LAB_NAMES.map((lab, i) => { const c=checks[String(i+1)]||[]; const n=c.filter(Boolean).length; return `${String(i+1).padStart(2,'0')}. ${lab}: ${n}/3 checklist items`; });
+      alert(`${name} (${csn})\nExperiments fully checked: ${complete}/10\nQuiz questions attempted: ${Number(d.quizAttempts||0)}\nCorrect answers: ${Number(d.quizCorrect||0)}\nQuiz points: ${Number(d.quizPoints||0)}\n\n${lines.join('\n')}`);
     }
 
     function filterRosterTable(val) {
@@ -2416,12 +2629,12 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       const title=document.createElement('div');title.className='text-[11px] text-slate-300 mb-1';title.textContent=`${f.label}${f.unit?' · '+f.unit:''}`;wrap.appendChild(title);
       let el;
       if(f.type==='select'){el=document.createElement('select');el.className='w-full bg-dark-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white';(f.options||[]).forEach(o=>{const op=document.createElement('option');op.value=o[0];op.textContent=o[1];el.appendChild(op);});el.value=f.default??'';}else{el=document.createElement('input');el.type='number';el.step='any';el.className='w-full bg-dark-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white';el.value=f.default??'';if(Number.isFinite(f.min))el.min=f.min;}
-      el.dataset.key=f.key;el.classList.add(cls);el.addEventListener('input',calculateLabSolver);el.addEventListener('change',calculateLabSolver);wrap.appendChild(el);return wrap;
+      el.dataset.key=f.key;el.classList.add(cls);el.addEventListener('input',()=>{calculateLabSolver();});el.addEventListener('change',()=>{calculateLabSolver();});wrap.appendChild(el);return wrap;
     }
 
     function addLabRow(values=[]){
       const lab=labDirectory[activeLabId], tbody=document.getElementById('labReadingBody'); if(!tbody)return; const tr=document.createElement('tr');tr.className='border-t border-white/5';
-      lab.columns.forEach((c,i)=>{const td=document.createElement('td');td.className='p-1.5';const input=document.createElement('input');input.type='number';input.step='any';input.className='w-full bg-dark-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white';input.dataset.key=c.key;input.value=(values[i]??c.default??'');input.addEventListener('input',calculateLabSolver);td.appendChild(input);tr.appendChild(td);});const del=document.createElement('td');del.className='p-1.5';del.innerHTML='<button type="button" class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-300 border border-rose-500/20" title="Remove row"><i class="fa-solid fa-xmark"></i></button>';del.firstChild.onclick=()=>{tr.remove();calculateLabSolver();};tr.appendChild(del);tbody.appendChild(tr);calculateLabSolver();}
+      lab.columns.forEach((c,i)=>{const td=document.createElement('td');td.className='p-1.5';const input=document.createElement('input');input.type='number';input.step='any';input.className='w-full bg-dark-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white';input.dataset.key=c.key;input.value=(values[i]??c.default??'');input.addEventListener('input',()=>{calculateLabSolver();});td.appendChild(input);tr.appendChild(td);});const del=document.createElement('td');del.className='p-1.5';del.innerHTML='<button type="button" class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-300 border border-rose-500/20" title="Remove row"><i class="fa-solid fa-xmark"></i></button>';del.firstChild.onclick=()=>{tr.remove();calculateLabSolver();};tr.appendChild(del);tbody.appendChild(tr);calculateLabSolver();}
     function removeLastLabRow(){const body=document.getElementById('labReadingBody');if(body&&body.lastElementChild){body.lastElementChild.remove();calculateLabSolver();}}
     function collectFieldValues(cls){const out={};document.querySelectorAll('.'+cls).forEach(el=>out[el.dataset.key]=el.value);return out;}
     function collectTableRows(){const rows=[];document.querySelectorAll('#labReadingBody tr').forEach(tr=>{const r={};tr.querySelectorAll('input[data-key]').forEach(el=>r[el.dataset.key]=Number(el.value));rows.push(r);});return rows;}
@@ -2510,6 +2723,23 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
     let quizStartTime = null;
     let quizTimerInterval = null;
     let userPoints = 0;
+    let quizSessionPoints = 0;
+    let questionAnswered = false;
+
+    function refreshQuizPlayerStats() {
+      const scoreEl = document.getElementById('userScore');
+      const streakEl = document.getElementById('userStreak');
+      if (currentUserSession && currentUserSession.role === 'faculty') {
+        userPoints = 0;
+        if (scoreEl) scoreEl.textContent = 'Teacher View';
+        if (streakEl) streakEl.textContent = '—';
+        return;
+      }
+      const student = currentUserSession ? students.find(s => s.csn === currentUserSession.csn) : null;
+      userPoints = student ? Number(student.score || 0) : 0;
+      if (scoreEl) scoreEl.textContent = `${userPoints} Pts`;
+      if (streakEl) streakEl.textContent = student ? Number(student.streak || 0) : '0';
+    }
 
     function openAddQuestionModal() {
       document.getElementById('addQuestionModal').classList.remove('hidden');
@@ -2557,6 +2787,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       document.getElementById('quizPreStartScreen').classList.add('hidden');
       document.getElementById('quizActiveContainer').classList.remove('hidden');
       currentQIndex = 0;
+      quizSessionPoints = 0;
       renderCurrentQuestion();
     }
 
@@ -2571,6 +2802,8 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       optContainer.innerHTML = '';
       document.getElementById('quizFeedbackBox').classList.add('hidden');
       document.getElementById('btnNextQuestion').classList.add('hidden');
+      document.getElementById('btnSkipQuestion').classList.remove('hidden');
+      questionAnswered = false;
 
       q.options.forEach((opt, idx) => {
         const btn = document.createElement('button');
@@ -2591,43 +2824,66 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
     }
 
     function submitQuizAnswer(isCorrect, buttonElem, explanation) {
+      if (questionAnswered) return;
+      questionAnswered = true;
       clearInterval(quizTimerInterval);
       const elapsed = ((performance.now() - quizStartTime) / 1000).toFixed(2);
-
       const fBox = document.getElementById('quizFeedbackBox');
       fBox.classList.remove('hidden');
-
       const allButtons = document.querySelectorAll('#quizOptionsContainer button');
       allButtons.forEach(b => b.disabled = true);
+      document.getElementById('btnSkipQuestion').classList.add('hidden');
 
+      const isFaculty = currentUserSession && currentUserSession.role === 'faculty';
+      const student = currentUserSession && !isFaculty ? students.find(s => s.csn === currentUserSession.csn) : null;
       if (isCorrect) {
         buttonElem.classList.add('bg-emerald-600/30', 'border-emerald-500', 'text-emerald-300');
         fBox.className = "p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-xs text-emerald-300 space-y-1";
         const speedBonus = Math.max(10, Math.floor(100 - (elapsed * 5)));
-        userPoints += speedBonus;
-        document.getElementById('userScore').textContent = userPoints + " Pts";
-        fBox.innerHTML = `<strong><i class="fa-solid fa-check-circle"></i> Correct! Answered in ${elapsed}s (+${speedBonus} Pts)</strong><p class="text-slate-300 mt-1">${explanation}</p>`;
-
-        if (currentUserSession && currentUserSession.role !== 'faculty') {
-          const match = students.find(s => s.csn === currentUserSession.csn);
-          if (match) {
-            match.score = (match.score || 0) + speedBonus;
-            match.streak = (match.streak || 0) + 1;
-            match.latency = elapsed + 's';
-            document.getElementById('userStreak').textContent = match.streak;
-            localStorage.setItem('bec_students_roster_v2', JSON.stringify(students));
-            renderRosterTable();
-            initLeaderboard();
-          }
+        if (student) {
+          student.score = Number(student.score || 0) + speedBonus;
+          student.streak = Number(student.streak || 0) + 1;
+          student.latency = elapsed + 's';
+          userPoints = student.score;
+          quizSessionPoints += speedBonus;
+          localStorage.setItem('bec_students_roster_v2', JSON.stringify(students));
+          refreshQuizPlayerStats();
+          renderRosterTable();
+          initLeaderboard();
+          recordQuizProgress(true, speedBonus);
+          fBox.innerHTML = `<strong><i class="fa-solid fa-check-circle"></i> Correct! Answered in ${elapsed}s (+${speedBonus} Pts)</strong><p class="text-slate-300 mt-1">${explanation}</p>`;
+        } else {
+          fBox.innerHTML = `<strong><i class="fa-solid fa-check-circle"></i> Correct! Faculty preview does not change student scores.</strong><p class="text-slate-300 mt-1">${explanation}</p>`;
         }
       } else {
         buttonElem.classList.add('bg-rose-600/30', 'border-rose-500', 'text-rose-300');
         fBox.className = "p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs text-rose-300 space-y-1";
-        fBox.innerHTML = `<strong><i class="fa-solid fa-times-circle"></i> Incorrect.</strong><p class="text-slate-300 mt-1">${explanation}</p>`;
+        if (student) {
+          student.streak = 0;
+          student.latency = elapsed + 's';
+          localStorage.setItem('bec_students_roster_v2', JSON.stringify(students));
+          refreshQuizPlayerStats();
+          renderRosterTable();
+          initLeaderboard();
+          recordQuizProgress(false, 0);
+        }
+        fBox.innerHTML = `<strong><i class="fa-solid fa-times-circle"></i> ${student ? 'Incorrect. Your streak reset to 0.' : 'Incorrect. Faculty preview does not change student standings.'}</strong><p class="text-slate-300 mt-1">${explanation}</p>`;
       }
-
       triggerMathRendering(fBox);
       trigger3DPunch();
+      document.getElementById('btnNextQuestion').classList.remove('hidden');
+    }
+
+    function skipQuizQuestion() {
+      if (questionAnswered) return;
+      questionAnswered = true;
+      clearInterval(quizTimerInterval);
+      document.querySelectorAll('#quizOptionsContainer button').forEach(b => b.disabled = true);
+      document.getElementById('btnSkipQuestion').classList.add('hidden');
+      const fBox = document.getElementById('quizFeedbackBox');
+      fBox.className = "p-4 rounded-xl border border-slate-600/40 bg-slate-700/20 text-xs text-slate-300";
+      fBox.innerHTML = '<strong>Question skipped.</strong> No points, attempt, or streak change.';
+      fBox.classList.remove('hidden');
       document.getElementById('btnNextQuestion').classList.remove('hidden');
     }
 
@@ -2636,7 +2892,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       if (currentQIndex < quizQuestionBank.length) {
         renderCurrentQuestion();
       } else {
-        alert(`Quiz Finished!\nYour Total Score: ${userPoints} Pts\nYour response time and points have been synced to the Room 101 Leaderboard.`);
+        alert(currentUserSession && currentUserSession.role === 'faculty' ? 'Quiz preview finished. Faculty attempts do not change student scores or streaks.' : `Quiz Finished!\nPoints earned this quiz: ${quizSessionPoints} Pts\nYour class total: ${userPoints} Pts`);
         document.getElementById('quizActiveContainer').classList.add('hidden');
         document.getElementById('quizPreStartScreen').classList.remove('hidden');
       }
@@ -2645,36 +2901,23 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
     function initLeaderboard() {
       const container = document.getElementById('leaderboardList');
       if (!container) return;
-
-      const sorted = [...students].sort((a, b) => (b.score || 0) - (a.score || 0));
-      const activeScorers = sorted.filter(s => (s.score || 0) > 0);
-
+      const isFaculty = currentUserSession && currentUserSession.role === 'faculty';
+      const sorted = [...students].sort((a, b) => (Number(b.score || 0) - Number(a.score || 0)) || (Number(a.roll || 0) - Number(b.roll || 0)));
+      const activeScorers = sorted.filter(s => Number(s.score || 0) > 0);
       document.getElementById('metricQuizCount').textContent = activeScorers.length;
-
-      if (activeScorers.length === 0) {
-        container.innerHTML = `
-          <div class="p-6 text-center text-xs text-slate-500 italic space-y-2">
-            <i class="fa-solid fa-award text-2xl text-slate-600 block"></i>
-            <span>No points recorded yet. Everyone starts at 0! Students will appear here as they complete quizzes.</span>
-          </div>
-        `;
+      const visibleStudents = isFaculty ? sorted : activeScorers.slice(0, 10);
+      if (visibleStudents.length === 0 && !isFaculty) {
+        container.innerHTML = `<div class="p-6 text-center text-xs text-slate-500 italic space-y-2"><i class="fa-solid fa-award text-2xl text-slate-600 block"></i><span>No points recorded yet. Everyone starts at 0! Students will appear here as they complete quizzes.</span></div>`;
         return;
       }
-
-      container.innerHTML = activeScorers.slice(0, 10).map((st, i) => `
+      container.innerHTML = visibleStudents.map((st, i) => `
         <div class="p-2.5 rounded-xl bg-dark-850/80 border border-white/5 flex items-center justify-between text-xs">
-          <div class="flex items-center space-x-2.5">
-            <span class="w-5 h-5 rounded-full ${i===0?'bg-amber-500/20 text-amber-400 font-bold':(i===1?'bg-slate-300/20 text-slate-300 font-bold':(i===2?'bg-amber-700/20 text-amber-600 font-bold':'bg-dark-750 text-slate-400'))} flex items-center justify-center font-mono text-[10px]">
-              ${i+1}
-            </span>
-            <div>
-              <div class="font-semibold text-white truncate max-w-[130px]">${st.name}</div>
-              <div class="text-[10px] text-slate-400">Roll ${st.roll} • Latency: ${st.latency || '—'}</div>
-            </div>
+          <div class="flex items-center space-x-2.5 min-w-0">
+            <span class="w-5 h-5 shrink-0 rounded-full ${i===0?'bg-amber-500/20 text-amber-400 font-bold':(i===1?'bg-slate-300/20 text-slate-300 font-bold':(i===2?'bg-amber-700/20 text-amber-600 font-bold':'bg-dark-750 text-slate-400'))} flex items-center justify-center font-mono text-[10px]">${i+1}</span>
+            <div class="min-w-0"><div class="font-semibold text-white truncate">${escapeHtml(st.name)}</div><div class="text-[10px] text-slate-400">Roll ${st.roll} • Streak: ${Number(st.streak||0)} • Latency: ${escapeHtml(st.latency || '—')}</div></div>
           </div>
-          <span class="font-mono font-bold text-amber-400">${st.score} pts</span>
-        </div>
-      `).join('');
+          <span class="font-mono font-bold text-amber-400 shrink-0 ml-2">${Number(st.score||0)} pts</span>
+        </div>`).join('');
     }
 
     function resetAllStandingsToZero() {
@@ -2685,9 +2928,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
           s.latency = "—";
         });
         localStorage.setItem('bec_students_roster_v2', JSON.stringify(students));
-        userPoints = 0;
-        document.getElementById('userScore').textContent = "0 Pts";
-        document.getElementById('userStreak').textContent = "0";
+        refreshQuizPlayerStats();
         initLeaderboard();
         renderRosterTable();
         alert("All student scores and standings have been reset to zero.");
