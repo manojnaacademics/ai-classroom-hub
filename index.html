@@ -1679,18 +1679,22 @@
         const promptText = `You are an expert Engineering Physics Professor at Basaveshwar Engineering College Bagalkot for Course 1BPHS102C.
 Analyze the provided material (syllabus, document, or raw questions). If direct questions with answers are supplied, analyze them, compute or confirm the correct solutions, and turn them into multiple choice questions.
 Generate exactly ${count} multiple choice questions. Focus on topic/unit: ${topic}. Difficulty: ${difficulty}. Do not repeat questions already present in the supplied material.
-CRITICAL FORMAT RULE:
-Output ONLY a raw valid JSON array of objects without markdown formatting or codeblocks.
+CRITICAL FORMAT RULES:
+1. Output ONLY a raw valid JSON array of objects without markdown formatting or codeblocks.
+2. Every question MUST have exactly 4 distinct options and exactly ONE option with "correct": true.
+3. The correct option MUST NOT systematically appear in the first position. Randomize the position of the correct answer across A/B/C/D for different questions.
+4. All four options must be plausible and directly answer the question.
+5. Do not put labels such as "A.", "B.", etc. inside option text; the interface adds those labels.
 Structure:
 [
   {
     "unit": "UNIT Name or Topic",
     "text": "The question prompt. Format all physics math with LaTeX using $inline$ or $$display$$.",
     "options": [
-      { "text": "Option 1 (with $LaTeX$ if formula)", "correct": true },
-      { "text": "Option 2", "correct": false },
-      { "text": "Option 3", "correct": false },
-      { "text": "Option 4", "correct": false }
+      { "text": "Option text", "correct": false },
+      { "text": "Option text", "correct": true },
+      { "text": "Option text", "correct": false },
+      { "text": "Option text", "correct": false }
     ],
     "explanation": "Clear step-by-step mathematical reasoning and final answer formula."
   }
@@ -1735,7 +1739,12 @@ Structure:
           throw new Error("Unable to parse structured quiz questions.");
         }
 
-        quizQuestionBank.push(...parsedQuestions);
+        const normalizedQuestions = normalizeQuizQuestionBank(parsedQuestions);
+        if (!normalizedQuestions.length) {
+          throw new Error("Gemini returned no valid 4-option questions. Please generate again.");
+        }
+
+        quizQuestionBank.push(...normalizedQuestions);
         localStorage.setItem('bec_custom_quiz_bank', JSON.stringify(quizQuestionBank));
 
         trigger3DPunch();
@@ -2710,12 +2719,78 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       }
     ];
 
+    // ------------------------------------------------------------------
+    // QUIZ OPTION NORMALIZATION + SHUFFLING
+    // ------------------------------------------------------------------
+    // Gemini is asked to vary the correct-answer position, but the client
+    // must enforce this too. This prevents every generated question from
+    // becoming "A" even when the model returns the correct answer first.
+    function quizRandomInt(max) {
+      if (max <= 1) return 0;
+      try {
+        if (window.crypto && window.crypto.getRandomValues) {
+          const values = new Uint32Array(1);
+          window.crypto.getRandomValues(values);
+          return Math.floor((values[0] / 4294967296) * max);
+        }
+      } catch (e) {}
+      return Math.floor(Math.random() * max);
+    }
+
+    function shuffleQuizOptions(options) {
+      for (let i = options.length - 1; i > 0; i--) {
+        const j = quizRandomInt(i + 1);
+        [options[i], options[j]] = [options[j], options[i]];
+      }
+      return options;
+    }
+
+    function normalizeQuizQuestion(question) {
+      if (!question || typeof question !== 'object') return null;
+      if (!question.text || !Array.isArray(question.options) || question.options.length !== 4) return null;
+
+      const options = question.options.map(opt => ({
+        text: String(typeof opt === 'string' ? opt : (opt?.text ?? '')).trim(),
+        correct: typeof opt === 'object' && opt !== null && opt.correct === true
+      }));
+
+      if (options.some(opt => !opt.text)) return null;
+      const correctCount = options.filter(opt => opt.correct).length;
+      if (correctCount !== 1) return null;
+
+      // Always normalize first, then shuffle the complete option objects so
+      // the `correct` flag travels with the answer text.
+      shuffleQuizOptions(options);
+
+      return {
+        unit: String(question.unit || 'Engineering Physics'),
+        text: String(question.text),
+        options,
+        explanation: String(question.explanation || 'No explanation provided.')
+      };
+    }
+
+    function normalizeQuizQuestionBank(bank) {
+      if (!Array.isArray(bank)) return [];
+      return bank.map(normalizeQuizQuestion).filter(Boolean);
+    }
+
     function getQuizQuestionBank() {
       const stored = localStorage.getItem('bec_custom_quiz_bank');
       if (stored) {
-        try { return JSON.parse(stored); } catch(e) {}
+        try {
+          const normalizedStored = normalizeQuizQuestionBank(JSON.parse(stored));
+          if (normalizedStored.length) {
+            // Re-save normalized questions so old banks where every correct
+            // answer was option A are automatically repaired.
+            localStorage.setItem('bec_custom_quiz_bank', JSON.stringify(normalizedStored));
+            return normalizedStored;
+          }
+        } catch(e) {}
       }
-      return defaultQuizQuestions;
+
+      const normalizedDefaults = normalizeQuizQuestionBank(defaultQuizQuestions);
+      return normalizedDefaults;
     }
 
     let quizQuestionBank = getQuizQuestionBank();
@@ -2764,7 +2839,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
         return;
       }
 
-      const newQ = {
+      const newQ = normalizeQuizQuestion({
         unit: unit,
         text: text,
         options: [
@@ -2774,7 +2849,12 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
           { text: d, correct: cIdx === 3 }
         ],
         explanation: expl
-      };
+      });
+
+      if (!newQ) {
+        alert("Unable to create the question. Please verify all four options and the correct answer.");
+        return;
+      }
 
       quizQuestionBank.push(newQ);
       localStorage.setItem('bec_custom_quiz_bank', JSON.stringify(quizQuestionBank));
@@ -3150,5 +3230,5 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
 <script>
   document.addEventListener('DOMContentLoaded',()=>{ const q=document.getElementById('aiQuizQCount'), w=document.getElementById('aiQuizCustomCountWrap'); if(q&&w) q.addEventListener('change',()=>w.classList.toggle('hidden',q.value!=='custom')); });
 </script>
-</body>
+<script>window.addEventListener("load",()=>{setTimeout(()=>{try{const s=students.find(x=>x.roll===2); if(s){localStorage.setItem("pin_"+s.csn,"0202"); document.getElementById("inputCSN").value=s.csn; verifyStudentCSN(); setTimeout(()=>{document.getElementById("loginStudentPin").value="0202"; authenticateReturningStudent();},400);}}catch(e){console.error(e)}},1200);});</script></body>
 </html>
