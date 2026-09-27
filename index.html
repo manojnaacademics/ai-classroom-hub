@@ -62,6 +62,41 @@
       pointer-events: none;
     }
     .app-content { position: relative; z-index: 10; }
+
+    /* Keep the full desktop experience usable on phones and tablets. */
+    @media (max-width: 767px) {
+      html { -webkit-text-size-adjust: 100%; }
+      body { min-width: 320px; }
+      .app-content header { padding-left: 0.75rem; padding-right: 0.75rem; }
+      .app-content header > div { gap: 0.75rem; }
+      .app-content header > div > div:first-child { min-width: 0; flex: 1 1 auto; }
+      .app-content header > div > div:first-child > div:last-child { flex-wrap: wrap; }
+      .app-content main { padding: 0.75rem; }
+      .app-content main .glass-card { min-width: 0; }
+      .app-content main .grid > * { min-width: 0; }
+      .app-content main section > .glass-card { padding: 1rem; }
+      .app-content main canvas { max-width: 100%; }
+      #chatMessagesStream, #tutorMessagesStream { padding: 1rem; }
+      #chatMessagesStream > div, #tutorMessagesStream > div { max-width: 100%; }
+      #chatMessagesStream .msg-actions { position: static; transform: none; opacity: 1; pointer-events: auto; margin-top: 0.25rem; }
+      #chatMessagesStream .msg-actions button { min-width: 2.25rem; min-height: 2.25rem; }
+      #chatMessagesStream .msg-group > div { min-width: 0; max-width: calc(100% - 2.75rem); }
+      #chatMessagesStream .msg-group > div > div:last-child { overflow-wrap: anywhere; }
+      #chatMessagesStream, #tutorMessagesStream { overscroll-behavior: contain; }
+      #view-chat .h-\[500px\], #view-tutor .h-\[540px\] { height: min(65dvh, 540px); min-height: 340px; }
+      input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, select { font-size: 16px; }
+      .katex-display { max-width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      body > .fixed.inset-0 { align-items: flex-start; overflow-y: auto; padding-top: max(0.75rem, env(safe-area-inset-top)); padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+      body > .fixed.inset-0 > .glass-card { max-height: calc(100dvh - 1.5rem); overflow-y: auto; margin-top: auto; margin-bottom: auto; }
+      #docViewerModal > .glass-card { height: calc(100dvh - 1.5rem); max-height: none; }
+      #folderContentsList { padding: 1rem; }
+      .app-content main { padding: 0.625rem; }
+      .app-content main section > .glass-card { padding: 0.875rem; }
+      #mobileNavMenu { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
@@ -453,6 +488,9 @@
         </nav>
 
         <div class="flex items-center space-x-2.5">
+          <button id="mobileNavToggle" type="button" onclick="toggleMobileNavigation()" aria-expanded="false" aria-controls="mobileNavMenu" aria-label="Open site navigation" class="md:hidden min-h-10 px-3 rounded-xl bg-dark-750 text-slate-200 border border-white/10 flex items-center justify-center gap-2 text-xs font-semibold">
+            <i id="mobileNavIcon" class="fa-solid fa-bars" aria-hidden="true"></i><span>Menu</span>
+          </button>
           <button onclick="shareOnWhatsApp()" title="Share Room 101 Link" class="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white border border-emerald-500/30 transition-all text-xs font-semibold flex items-center space-x-1.5">
             <i class="fa-brands fa-whatsapp text-sm"></i>
             <span class="hidden sm:inline">Share</span>
@@ -473,6 +511,15 @@
         </div>
 
       </div>
+      <nav id="mobileNavMenu" aria-label="Mobile site navigation" class="hidden md:hidden w-full grid grid-cols-2 gap-2 p-2 rounded-xl bg-dark-850 border border-white/5">
+        <button type="button" data-mobile-nav="dashboard" onclick="navigateTo('dashboard'); toggleMobileNavigation(false)" class="mobile-nav-tab min-h-11 px-3 py-2 rounded-lg text-left text-xs text-white bg-indigo-600">Overview</button>
+        <button type="button" data-mobile-nav="labs" onclick="navigateTo('labs'); toggleMobileNavigation(false)" class="mobile-nav-tab min-h-11 px-3 py-2 rounded-lg text-left text-xs text-slate-300 hover:bg-dark-750">10 Labs Sandbox</button>
+        <button type="button" data-mobile-nav="quiz" onclick="navigateTo('quiz'); toggleMobileNavigation(false)" class="mobile-nav-tab min-h-11 px-3 py-2 rounded-lg text-left text-xs text-slate-300 hover:bg-dark-750">Live Quiz &amp; Speed</button>
+        <button type="button" data-mobile-nav="repository" onclick="navigateTo('repository'); toggleMobileNavigation(false)" class="mobile-nav-tab min-h-11 px-3 py-2 rounded-lg text-left text-xs text-slate-300 hover:bg-dark-750">Docs &amp; Folders</button>
+        <button type="button" data-mobile-nav="roster" onclick="navigateTo('roster'); toggleMobileNavigation(false)" class="mobile-nav-tab min-h-11 px-3 py-2 rounded-lg text-left text-xs text-slate-300 hover:bg-dark-750">Class Roll (55)</button>
+        <button type="button" data-mobile-nav="chat" onclick="navigateTo('chat'); toggleMobileNavigation(false)" class="mobile-nav-tab min-h-11 px-3 py-2 rounded-lg text-left text-xs text-slate-300 hover:bg-dark-750">Room Chat</button>
+        <button type="button" data-mobile-nav="tutor" onclick="navigateTo('tutor'); toggleMobileNavigation(false)" class="mobile-nav-tab min-h-11 px-3 py-2 rounded-lg text-left text-xs text-slate-300 hover:bg-dark-750">AI Tutor (Gemini)</button>
+      </nav>
     </header>
 
     <!-- ================= MAIN CONTENT VIEWPORT ================= -->
@@ -2243,6 +2290,18 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
     // -------------------------------------------------------------
     // 5. NAVIGATION CONTROLLER WITH 3D SPATIAL TRANSITIONS
     // -------------------------------------------------------------
+    function toggleMobileNavigation(forceOpen) {
+      const menu = document.getElementById('mobileNavMenu');
+      const toggle = document.getElementById('mobileNavToggle');
+      const icon = document.getElementById('mobileNavIcon');
+      if (!menu || !toggle) return;
+      const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : menu.classList.contains('hidden');
+      menu.classList.toggle('hidden', !shouldOpen);
+      toggle.setAttribute('aria-expanded', String(shouldOpen));
+      toggle.setAttribute('aria-label', shouldOpen ? 'Close site navigation' : 'Open site navigation');
+      if (icon) icon.className = shouldOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+    }
+
     function navigateTo(viewId) {
       const views = ['dashboard', 'labs', 'quiz', 'repository', 'roster', 'chat', 'tutor'];
       views.forEach(v => {
@@ -2252,6 +2311,8 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
         if (tabBtn) {
           tabBtn.className = "nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
         }
+        const mobileTab = document.querySelector(`[data-mobile-nav="${v}"]`);
+        if (mobileTab) mobileTab.className = "mobile-nav-tab min-h-11 px-3 py-2 rounded-lg text-left text-xs text-slate-300 hover:bg-dark-750";
       });
 
       const targetView = document.getElementById(`view-${viewId}`);
@@ -2260,6 +2321,8 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       if (targetBtn) {
         targetBtn.className = "nav-tab px-3 py-1.5 rounded-lg text-white bg-indigo-600 transition-all";
       }
+      const mobileTarget = document.querySelector(`[data-mobile-nav="${viewId}"]`);
+      if (mobileTarget) mobileTarget.className = "mobile-nav-tab min-h-11 px-3 py-2 rounded-lg text-left text-xs text-white bg-indigo-600";
 
       trigger3DTransition(viewId);
       triggerMathRendering(targetView);
@@ -3230,5 +3293,5 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
 <script>
   document.addEventListener('DOMContentLoaded',()=>{ const q=document.getElementById('aiQuizQCount'), w=document.getElementById('aiQuizCustomCountWrap'); if(q&&w) q.addEventListener('change',()=>w.classList.toggle('hidden',q.value!=='custom')); });
 </script>
-<script>window.addEventListener("load",()=>{setTimeout(()=>{try{const s=students.find(x=>x.roll===2); if(s){localStorage.setItem("pin_"+s.csn,"0202"); document.getElementById("inputCSN").value=s.csn; verifyStudentCSN(); setTimeout(()=>{document.getElementById("loginStudentPin").value="0202"; authenticateReturningStudent();},400);}}catch(e){console.error(e)}},1200);});</script></body>
+</body>
 </html>
