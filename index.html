@@ -192,6 +192,7 @@
         <button onclick="authenticateFaculty()" class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all">
           Unlock Professor Command
         </button>
+        <button onclick="openFacultyRecoveryModal()" class="w-full text-[11px] text-indigo-300 hover:text-white py-1">Forgot Faculty PIN? Use recovery key</button>
       </div>
 
       <div id="authNotice" class="hidden mt-4 p-2.5 rounded-lg text-xs font-medium text-center"></div>
@@ -200,6 +201,18 @@
         Project Developer: <span class="text-slate-300 font-semibold">Manojna Mahesh Palleda</span> (Roll No. 02)<br/>
         Physics Cycle • Room 101 • Academic Year 2026-27
       </div>
+    </div>
+  </div>
+
+  <!-- ================= FACULTY PIN RECOVERY MODAL ================= -->
+  <div id="facultyRecoveryModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-dark-900/90 backdrop-blur-md">
+    <div class="glass-card max-w-md w-full p-6 rounded-2xl border border-amber-500/30 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center"><h3 class="text-sm font-bold text-white"><i class="fa-solid fa-key text-amber-400 mr-2"></i>Faculty PIN Recovery</h3><button onclick="closeFacultyRecoveryModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="text-xs text-slate-300">For this standalone academic prototype, recovery uses a local recovery key. This is not production-grade authentication.</p>
+      <input id="facultyRecoveryKey" type="password" class="w-full bg-dark-850 border border-slate-700 rounded-xl px-3 py-2.5 text-white" placeholder="Enter recovery key"/>
+      <input id="facultyRecoveryNewPin" type="password" maxlength="6" class="w-full bg-dark-850 border border-slate-700 rounded-xl px-3 py-2.5 text-white" placeholder="New faculty PIN (4–6 digits)"/>
+      <button onclick="recoverFacultyPin()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-semibold">Reset Faculty PIN</button>
+      <p class="text-[10px] text-slate-500 text-center">Default demo recovery key: <span class="font-mono">PHYSICS-ROOM101</span></p>
     </div>
   </div>
 
@@ -256,12 +269,12 @@
           <textarea id="aiQuizRawText" rows="4" placeholder="e.g. Determine the de Broglie wavelength for an electron with 2.19x10^6 m/s. Ans: 3.31x10^-10 m..." class="w-full bg-dark-850 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500"></textarea>
         </div>
         <div class="flex items-center justify-between text-[11px] text-slate-400">
-          <span>Number of questions:</span>
-          <select id="aiQuizQCount" class="bg-dark-850 border border-slate-700 rounded-lg px-2 py-1 text-white">
-            <option value="3">3 Questions</option>
-            <option value="5" selected>5 Questions</option>
-            <option value="8">8 Questions</option>
-          </select>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+          <div><label class="block text-slate-400 mb-1">Topic / Unit</label><input id="aiQuizTopic" class="w-full bg-dark-850 border border-slate-700 rounded-lg px-2 py-1.5 text-white" placeholder="e.g. Quantum Mechanics / Any" /></div>
+          <div><label class="block text-slate-400 mb-1">Difficulty</label><select id="aiQuizDifficulty" class="w-full bg-dark-850 border border-slate-700 rounded-lg px-2 py-1.5 text-white"><option>Mixed</option><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
+          <div><label class="block text-slate-400 mb-1">Questions</label><select id="aiQuizQCount" class="w-full bg-dark-850 border border-slate-700 rounded-lg px-2 py-1.5 text-white"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option><option value="20">20</option><option value="30">30</option><option value="50">50</option><option value="100">100</option><option value="custom">Custom…</option></select></div>
+        </div>
+        <div id="aiQuizCustomCountWrap" class="hidden"><input id="aiQuizCustomCount" type="number" min="1" max="100" value="25" class="w-full bg-dark-850 border border-slate-700 rounded-lg px-3 py-1.5 text-white" placeholder="Custom question count (1–100)" /></div>
         </div>
       </div>
 
@@ -732,6 +745,14 @@
           </div>
         </div>
 
+        <div class="glass-card p-5 rounded-2xl border border-indigo-500/20 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <div><h3 class="text-sm font-bold text-white"><i class="fa-solid fa-folder-plus text-indigo-400 mr-2"></i>Custom Course Folders</h3><p class="text-[11px] text-slate-400">Create extra folders for any lecture notes, projects, question banks, references, or future units.</p></div>
+            <button onclick="createCustomFolder()" class="faculty-plus-btn hidden px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i>Create New Folder</button>
+          </div>
+          <div id="customFoldersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        </div>
+
         <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
@@ -1156,33 +1177,49 @@
     function renderFolderLists() {
       const categories = ['syllabus', 'assignments', 'exams', 'labs'];
       categories.forEach(cat => {
-        const container = document.getElementById(`folder_${cat}_list`);
-        if (!container) return;
-
+        const container = document.getElementById(`folder_${cat}_list`); if (!container) return;
         const filesInFolder = uploadedNativeDocs.filter(d => d.category === cat);
-        if (filesInFolder.length === 0) {
-          container.innerHTML = `<span class="text-[11px] text-slate-500 italic">Folder empty. Ready for uploads.</span>`;
-          return;
-        }
-
-        container.innerHTML = filesInFolder.map((doc) => {
+        container.innerHTML = filesInFolder.length ? filesInFolder.map(doc => {
           const globalIdx = uploadedNativeDocs.findIndex(d => d.id === doc.id);
-          const isPdf = doc.type.includes('pdf');
-          const icon = isPdf ? 'fa-file-pdf text-rose-400' : 'fa-file-image text-emerald-400';
-          return `
-            <div class="flex items-center justify-between p-1.5 rounded-lg bg-dark-850 hover:bg-dark-750 border border-white/5 transition-all">
-              <button onclick="viewUploadedFileByIndex(${globalIdx})" class="text-left font-medium text-white truncate max-w-[140px] flex items-center gap-1.5" title="${doc.name}">
-                <i class="fa-solid ${icon} text-[11px] shrink-0"></i>
-                <span class="truncate">${doc.name}</span>
-              </button>
-              <div class="flex items-center space-x-1 shrink-0">
-                <button onclick="viewUploadedFileByIndex(${globalIdx})" class="p-1 text-indigo-400 hover:text-white" title="View"><i class="fa-solid fa-eye text-[10px]"></i></button>
-                <a href="${doc.dataUrl}" download="${doc.name}" class="p-1 text-slate-400 hover:text-white" title="Download"><i class="fa-solid fa-download text-[10px]"></i></a>
-              </div>
-            </div>
-          `;
-        }).join('');
+          const icon = (doc.type || '').includes('pdf') ? 'fa-file-pdf text-rose-400' : 'fa-file-image text-emerald-400';
+          return `<div class="flex items-center justify-between p-1.5 rounded-lg bg-dark-850 hover:bg-dark-750 border border-white/5"><button onclick="viewUploadedFileByIndex(${globalIdx})" class="text-left font-medium text-white truncate max-w-[140px] flex items-center gap-1.5" title="${escapeHtml(doc.name)}"><i class="fa-solid ${icon} text-[11px]"></i><span class="truncate">${escapeHtml(doc.name)}</span></button><div class="flex items-center space-x-1"><button onclick="viewUploadedFileByIndex(${globalIdx})" class="p-1 text-indigo-400" title="View"><i class="fa-solid fa-eye text-[10px]"></i></button><a href="${doc.dataUrl}" download="${escapeHtml(doc.name)}" class="p-1 text-slate-400" title="Download"><i class="fa-solid fa-download text-[10px]"></i></a></div></div>`;
+        }).join('') : `<span class="text-[11px] text-slate-500 italic">Folder empty. Ready for uploads.</span>`;
       });
+      renderCustomFolders();
+    }
+
+    function getCustomFolders() { try { return JSON.parse(localStorage.getItem('room101_custom_folders_v1') || '[]'); } catch(e) { return []; } }
+    function saveCustomFolders(folders) { localStorage.setItem('room101_custom_folders_v1', JSON.stringify(folders)); }
+    function createCustomFolder() {
+      if (!currentUserSession || currentUserSession.role !== 'faculty') return alert('Only Faculty Admin can create folders.');
+      const name = prompt('New folder name:'); if (!name || !name.trim()) return;
+      const folders = getCustomFolders(); const clean = name.trim();
+      if (folders.some(f => f.name.toLowerCase() === clean.toLowerCase())) return alert('A folder with this name already exists.');
+      folders.push({id:'custom_' + Date.now(), name:clean}); saveCustomFolders(folders); renderCustomFolders();
+    }
+    function renameCustomFolder(id) {
+      const folders=getCustomFolders(), f=folders.find(x=>x.id===id); if(!f)return; const name=prompt('Rename folder:',f.name); if(!name||!name.trim())return; f.name=name.trim(); saveCustomFolders(folders); uploadedNativeDocs.forEach(d=>{if(d.category===id)d.folderName=f.name;}); try{localStorage.setItem('room101_uploaded_docs_v2',JSON.stringify(uploadedNativeDocs));}catch(e){} renderCustomFolders(); renderUploadedFileList();
+    }
+    function deleteCustomFolder(id) {
+      const folders=getCustomFolders(), f=folders.find(x=>x.id===id); if(!f)return; const count=uploadedNativeDocs.filter(d=>d.category===id).length; if(!confirm(`Delete folder "${f.name}"${count?` and its ${count} uploaded file(s)`:''}?`))return;
+      if(count) uploadedNativeDocs=uploadedNativeDocs.filter(d=>d.category!==id); saveCustomFolders(folders.filter(x=>x.id!==id)); try{localStorage.setItem('room101_uploaded_docs_v2',JSON.stringify(uploadedNativeDocs));}catch(e){} renderFolderLists(); renderUploadedFileList();
+    }
+    function renderCustomFolders() {
+      const root=document.getElementById('customFoldersGrid'); if(!root)return; const folders=getCustomFolders();
+      root.innerHTML=folders.length ? folders.map(f=>{const count=uploadedNativeDocs.filter(d=>d.category===f.id).length; return `<div class="glass-card p-4 rounded-xl border border-white/10"><div class="flex items-center justify-between"><div class="w-9 h-9 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-folder"></i></div><div class="faculty-only-folder-actions ${currentUserSession?.role==='faculty'?'':'hidden'} flex gap-1"><button onclick="renameCustomFolder('${f.id}')" class="p-1.5 text-slate-400 hover:text-white" title="Rename"><i class="fa-solid fa-pen"></i></button><button onclick="deleteCustomFolder('${f.id}')" class="p-1.5 text-rose-400 hover:text-rose-300" title="Delete"><i class="fa-solid fa-trash"></i></button></div></div><div class="mt-3"><div class="font-semibold text-white text-sm truncate" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div><div class="text-[10px] text-slate-500">${count} file(s)</div></div><button onclick="triggerFolderUpload('${f.id}')" class="faculty-plus-btn ${currentUserSession?.role==='faculty'?'':'hidden'} mt-3 w-full py-1.5 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-semibold"><i class="fa-solid fa-upload mr-1"></i>Upload to Folder</button></div>`;}).join('') : `<div class="col-span-full text-center text-xs text-slate-500 py-4">No custom folders yet. Faculty can create one above.</div>`;
+    }
+
+    function triggerFolderUpload(category) {
+      if (!currentUserSession || currentUserSession.role !== 'faculty') { alert('Permission denied. Only Faculty Admin can upload documents.'); return; }
+      targetFolderCategory = category; document.getElementById('folderSpecificFileInput').click();
+    }
+
+    function handleFolderUploadChosen(event) {
+      const file=event.target.files[0]; if(!file||!targetFolderCategory)return; const reader=new FileReader(); reader.onload=function(e){
+        const folderName=targetFolderCategory.startsWith('custom_') ? (getCustomFolders().find(f=>f.id===targetFolderCategory)?.name||'Custom Folder') : targetFolderCategory.toUpperCase();
+        uploadedNativeDocs.unshift({id:'doc_'+Date.now(),category:targetFolderCategory,folderName,name:file.name,size:(file.size/1024).toFixed(1)+' KB',type:file.type||'application/octet-stream',dataUrl:e.target.result,uploader:currentUserSession.name,time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+        try{localStorage.setItem('room101_uploaded_docs_v2',JSON.stringify(uploadedNativeDocs));}catch(err){console.warn('Storage limit reached; file kept in active session memory.');}
+        renderFolderLists(); renderUploadedFileList(); trigger3DPunch(); alert(`File "${file.name}" uploaded successfully to [${folderName}]!`); targetFolderCategory=null;}; reader.readAsDataURL(file); event.target.value='';
     }
 
     function renderUploadedFileList() {
@@ -1398,7 +1435,9 @@
 
       const fileInput = document.getElementById('aiQuizDocInput');
       const rawText = document.getElementById('aiQuizRawText').value.trim();
-      const count = document.getElementById('aiQuizQCount').value;
+      const count = document.getElementById('aiQuizQCount').value === 'custom' ? Math.max(1, Math.min(100, parseInt(document.getElementById('aiQuizCustomCount').value || '25'))) : parseInt(document.getElementById('aiQuizQCount').value);
+      const topic = document.getElementById('aiQuizTopic').value.trim() || 'All Engineering Physics topics in the supplied material';
+      const difficulty = document.getElementById('aiQuizDifficulty').value;
 
       if (!fileInput.files[0] && !rawText) {
         alert("Please select a document file or paste question/syllabus text to analyze.");
@@ -1413,7 +1452,7 @@
 
         const promptText = `You are an expert Engineering Physics Professor at Basaveshwar Engineering College Bagalkot for Course 1BPHS102C.
 Analyze the provided material (syllabus, document, or raw questions). If direct questions with answers are supplied, analyze them, compute or confirm the correct solutions, and turn them into multiple choice questions.
-Generate exactly ${count} multiple choice questions.
+Generate exactly ${count} multiple choice questions. Focus on topic/unit: ${topic}. Difficulty: ${difficulty}. Do not repeat questions already present in the supplied material.
 CRITICAL FORMAT RULE:
 Output ONLY a raw valid JSON array of objects without markdown formatting or codeblocks.
 Structure:
@@ -1764,7 +1803,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
         };
         completeLoginSession(facultyObj, 'faculty');
       } else {
-        showAuthNotice("Invalid Administrative PIN. Default is 1010.");
+        showAuthNotice("Invalid Administrative PIN. Use Forgot Faculty PIN? if you need recovery.");
       }
     }
 
@@ -1802,6 +1841,7 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       initLeaderboard();
       loadChatMessages();
       renderFolderLists();
+      renderCustomFolders();
       renderUploadedFileList();
       updateGeminiStatusUI();
       triggerMathRendering();
@@ -1857,6 +1897,16 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
         alert("Your personal PIN has been updated successfully.");
         closePinChangeModal();
       }
+    }
+
+    function openFacultyRecoveryModal(){ document.getElementById('facultyRecoveryKey').value=''; document.getElementById('facultyRecoveryNewPin').value=''; document.getElementById('facultyRecoveryModal').classList.remove('hidden'); }
+    function closeFacultyRecoveryModal(){ document.getElementById('facultyRecoveryModal').classList.add('hidden'); }
+    function recoverFacultyPin(){
+      const key=document.getElementById('facultyRecoveryKey').value.trim(); const pin=document.getElementById('facultyRecoveryNewPin').value.trim();
+      const recovery=localStorage.getItem('bec_faculty_recovery_key') || 'PHYSICS-ROOM101';
+      if(key!==recovery) return alert('Invalid recovery key.');
+      if(!/^\d{4,6}$/.test(pin)) return alert('PIN must contain 4–6 digits.');
+      localStorage.setItem('bec_faculty_pin',pin); closeFacultyRecoveryModal(); document.getElementById('inputFacultyPin').value=pin; alert('Faculty PIN reset successfully. You can now log in.');
     }
 
     // -------------------------------------------------------------
@@ -2735,5 +2785,8 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       triggerMathRendering();
     });
   </script>
+<script>
+  document.addEventListener('DOMContentLoaded',()=>{ const q=document.getElementById('aiQuizQCount'), w=document.getElementById('aiQuizCustomCountWrap'); if(q&&w) q.addEventListener('change',()=>w.classList.toggle('hidden',q.value!=='custom')); });
+</script>
 </body>
 </html>
