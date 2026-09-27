@@ -677,9 +677,14 @@
               <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
                 <i class="fa-solid fa-folder-closed"></i>
               </div>
-              <button onclick="triggerFolderUpload('syllabus')" title="Upload PDF to Syllabus" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
-                <i class="fa-solid fa-plus text-xs"></i>
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button onclick="triggerFolderUpload('syllabus')" title="Upload file to Syllabus" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
+                  <i class="fa-solid fa-plus text-xs"></i>
+                </button>
+                <button onclick="addFolderUrl('syllabus')" title="Add URL to Syllabus" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
+                  <i class="fa-solid fa-link text-xs"></i>
+                </button>
+              </div>
             </div>
             <div>
               <h3 class="text-sm font-bold text-white">Course Syllabus</h3>
@@ -695,9 +700,14 @@
               <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
                 <i class="fa-solid fa-folder-closed"></i>
               </div>
-              <button onclick="triggerFolderUpload('assignments')" title="Upload PDF to Assignments" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
-                <i class="fa-solid fa-plus text-xs"></i>
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button onclick="triggerFolderUpload('assignments')" title="Upload file to Assignments" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
+                  <i class="fa-solid fa-plus text-xs"></i>
+                </button>
+                <button onclick="addFolderUrl('assignments')" title="Add URL to Assignments" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
+                  <i class="fa-solid fa-link text-xs"></i>
+                </button>
+              </div>
             </div>
             <div>
               <h3 class="text-sm font-bold text-white">Unit Assignments</h3>
@@ -713,9 +723,14 @@
               <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
                 <i class="fa-solid fa-folder-closed"></i>
               </div>
-              <button onclick="triggerFolderUpload('exams')" title="Upload PDF to Exam Sets" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
-                <i class="fa-solid fa-plus text-xs"></i>
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button onclick="triggerFolderUpload('exams')" title="Upload file to Exam Sets" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
+                  <i class="fa-solid fa-plus text-xs"></i>
+                </button>
+                <button onclick="addFolderUrl('exams')" title="Add URL to Exam Sets" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
+                  <i class="fa-solid fa-link text-xs"></i>
+                </button>
+              </div>
             </div>
             <div>
               <h3 class="text-sm font-bold text-white">CIE & SEE Exam Sets</h3>
@@ -731,9 +746,14 @@
               <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg">
                 <i class="fa-solid fa-folder-closed"></i>
               </div>
-              <button onclick="triggerFolderUpload('labs')" title="Upload PDF to Lab Manuals" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
-                <i class="fa-solid fa-plus text-xs"></i>
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button onclick="triggerFolderUpload('labs')" title="Upload file to Lab Manuals" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow transition-all">
+                  <i class="fa-solid fa-plus text-xs"></i>
+                </button>
+                <button onclick="addFolderUrl('labs')" title="Add URL to Lab Manuals" class="faculty-plus-btn hidden w-7 h-7 rounded-lg bg-cyan-600/80 hover:bg-cyan-500 text-white flex items-center justify-center shadow transition-all">
+                  <i class="fa-solid fa-link text-xs"></i>
+                </button>
+              </div>
             </div>
             <div>
               <h3 class="text-sm font-bold text-white">Laboratory Manuals</h3>
@@ -1174,16 +1194,95 @@
       event.target.value = '';
     }
 
+    function getFolderDisplayName(category) {
+      if (String(category).startsWith('custom_')) {
+        return getCustomFolders().find(f => f.id === category)?.name || 'Custom Folder';
+      }
+      const names = { syllabus: 'Course Syllabus', assignments: 'Unit Assignments', exams: 'CIE & SEE Exam Sets', labs: 'Laboratory Manuals' };
+      return names[category] || String(category).toUpperCase();
+    }
+
+    function addFolderUrl(category) {
+      if (!currentUserSession || currentUserSession.role !== 'faculty') {
+        alert('Permission denied. Only Faculty Admin can add links.');
+        return;
+      }
+
+      const folderName = getFolderDisplayName(category);
+      const rawUrl = prompt(`Paste the URL to add to [${folderName}]:`);
+      if (!rawUrl || !rawUrl.trim()) return;
+      const url = rawUrl.trim();
+      let parsed;
+      try {
+        parsed = new URL(url);
+      } catch (e) {
+        alert('Please enter a valid URL, including https://');
+        return;
+      }
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        alert('Only HTTP and HTTPS links are allowed.');
+        return;
+      }
+
+      const defaultName = parsed.hostname.replace(/^www\./, '') || 'Web Resource';
+      const name = prompt('Name this link:', defaultName);
+      if (!name || !name.trim()) return;
+
+      uploadedNativeDocs.unshift({
+        id: 'link_' + Date.now(),
+        category,
+        folderName,
+        name: name.trim(),
+        type: 'text/url',
+        url,
+        uploader: currentUserSession.name,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isUrl: true
+      });
+
+      try {
+        localStorage.setItem('room101_uploaded_docs_v2', JSON.stringify(uploadedNativeDocs));
+      } catch (err) {
+        console.warn('Unable to persist linked resource; keeping it in active session memory.');
+      }
+
+      renderFolderLists();
+      renderUploadedFileList();
+      trigger3DPunch();
+      alert(`Link "${name.trim()}" added successfully to folder [${folderName}]!`);
+    }
+
     function renderFolderLists() {
       const categories = ['syllabus', 'assignments', 'exams', 'labs'];
       categories.forEach(cat => {
-        const container = document.getElementById(`folder_${cat}_list`); if (!container) return;
-        const filesInFolder = uploadedNativeDocs.filter(d => d.category === cat);
-        container.innerHTML = filesInFolder.length ? filesInFolder.map(doc => {
-          const globalIdx = uploadedNativeDocs.findIndex(d => d.id === doc.id);
-          const icon = (doc.type || '').includes('pdf') ? 'fa-file-pdf text-rose-400' : 'fa-file-image text-emerald-400';
-          return `<div class="flex items-center justify-between p-1.5 rounded-lg bg-dark-850 hover:bg-dark-750 border border-white/5"><button onclick="viewUploadedFileByIndex(${globalIdx})" class="text-left font-medium text-white truncate max-w-[140px] flex items-center gap-1.5" title="${escapeHtml(doc.name)}"><i class="fa-solid ${icon} text-[11px]"></i><span class="truncate">${escapeHtml(doc.name)}</span></button><div class="flex items-center space-x-1"><button onclick="viewUploadedFileByIndex(${globalIdx})" class="p-1 text-indigo-400" title="View"><i class="fa-solid fa-eye text-[10px]"></i></button><a href="${doc.dataUrl}" download="${escapeHtml(doc.name)}" class="p-1 text-slate-400" title="Download"><i class="fa-solid fa-download text-[10px]"></i></a></div></div>`;
-        }).join('') : `<span class="text-[11px] text-slate-500 italic">Folder empty. Ready for uploads.</span>`;
+        const container = document.getElementById(`folder_${cat}_list`);
+        if (!container) return;
+        const itemsInFolder = uploadedNativeDocs.filter(d => d.category === cat);
+        container.innerHTML = itemsInFolder.length ? itemsInFolder.map(item => {
+          const globalIdx = uploadedNativeDocs.findIndex(d => d.id === item.id);
+          if (item.isUrl) {
+            return `<div class="flex items-center justify-between p-1.5 rounded-lg bg-dark-850 hover:bg-dark-750 border border-white/5">
+              <button onclick="openFolderUrlByIndex(${globalIdx})" class="text-left font-medium text-white truncate max-w-[140px] flex items-center gap-1.5" title="${escapeHtml(item.name)}">
+                <i class="fa-solid fa-link text-cyan-400 text-[11px]"></i><span class="truncate">${escapeHtml(item.name)}</span>
+              </button>
+              <div class="flex items-center space-x-1">
+                <button onclick="openFolderUrlByIndex(${globalIdx})" class="p-1 text-cyan-400" title="Open Link"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></button>
+                ${currentUserSession && currentUserSession.role === 'faculty' ? `<button onclick="deleteUploadedFile(${globalIdx})" class="p-1 text-rose-400" title="Delete"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : ''}
+              </div>
+            </div>`;
+          }
+          const icon = (item.type || '').includes('pdf') ? 'fa-file-pdf text-rose-400' : (item.type || '').includes('image') ? 'fa-file-image text-emerald-400' : 'fa-file text-cyan-400';
+          return `<div class="flex items-center justify-between p-1.5 rounded-lg bg-dark-850 hover:bg-dark-750 border border-white/5">
+            <button onclick="viewUploadedFileByIndex(${globalIdx})" class="text-left font-medium text-white truncate max-w-[140px] flex items-center gap-1.5" title="${escapeHtml(item.name)}">
+              <i class="fa-solid ${icon} text-[11px]"></i><span class="truncate">${escapeHtml(item.name)}</span>
+            </button>
+            <div class="flex items-center space-x-1">
+              <button onclick="viewUploadedFileByIndex(${globalIdx})" class="p-1 text-indigo-400" title="View"><i class="fa-solid fa-eye text-[10px]"></i></button>
+              <a href="${item.dataUrl}" download="${escapeHtml(item.name)}" class="p-1 text-slate-400" title="Download"><i class="fa-solid fa-download text-[10px]"></i></a>
+              ${currentUserSession && currentUserSession.role === 'faculty' ? `<button onclick="deleteUploadedFile(${globalIdx})" class="p-1 text-rose-400" title="Delete"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : ''}
+            </div>
+          </div>`;
+        }).join('') : `<span class="text-[11px] text-slate-500 italic">Folder empty. Ready for uploads or links.</span>`;
       });
       renderCustomFolders();
     }
@@ -1206,7 +1305,10 @@
     }
     function renderCustomFolders() {
       const root=document.getElementById('customFoldersGrid'); if(!root)return; const folders=getCustomFolders();
-      root.innerHTML=folders.length ? folders.map(f=>{const count=uploadedNativeDocs.filter(d=>d.category===f.id).length; return `<div class="glass-card p-4 rounded-xl border border-white/10"><div class="flex items-center justify-between"><div class="w-9 h-9 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-folder"></i></div><div class="faculty-only-folder-actions ${currentUserSession?.role==='faculty'?'':'hidden'} flex gap-1"><button onclick="renameCustomFolder('${f.id}')" class="p-1.5 text-slate-400 hover:text-white" title="Rename"><i class="fa-solid fa-pen"></i></button><button onclick="deleteCustomFolder('${f.id}')" class="p-1.5 text-rose-400 hover:text-rose-300" title="Delete"><i class="fa-solid fa-trash"></i></button></div></div><div class="mt-3"><div class="font-semibold text-white text-sm truncate" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div><div class="text-[10px] text-slate-500">${count} file(s)</div></div><button onclick="triggerFolderUpload('${f.id}')" class="faculty-plus-btn ${currentUserSession?.role==='faculty'?'':'hidden'} mt-3 w-full py-1.5 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-semibold"><i class="fa-solid fa-upload mr-1"></i>Upload to Folder</button></div>`;}).join('') : `<div class="col-span-full text-center text-xs text-slate-500 py-4">No custom folders yet. Faculty can create one above.</div>`;
+      root.innerHTML=folders.length ? folders.map(f=>{const count=uploadedNativeDocs.filter(d=>d.category===f.id).length; return `<div class="glass-card p-4 rounded-xl border border-white/10"><div class="flex items-center justify-between"><div class="w-9 h-9 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-folder"></i></div><div class="faculty-only-folder-actions ${currentUserSession?.role==='faculty'?'':'hidden'} flex gap-1"><button onclick="renameCustomFolder('${f.id}')" class="p-1.5 text-slate-400 hover:text-white" title="Rename"><i class="fa-solid fa-pen"></i></button><button onclick="deleteCustomFolder('${f.id}')" class="p-1.5 text-rose-400 hover:text-rose-300" title="Delete"><i class="fa-solid fa-trash"></i></button></div></div><div class="mt-3"><div class="font-semibold text-white text-sm truncate" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div><div class="text-[10px] text-slate-500">${count} item(s)</div></div><div class="grid grid-cols-2 gap-2 mt-3">
+              <button onclick="triggerFolderUpload('${f.id}')" class="faculty-plus-btn ${currentUserSession?.role==='faculty'?'':'hidden'} w-full py-1.5 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-semibold"><i class="fa-solid fa-upload mr-1"></i>Upload</button>
+              <button onclick="addFolderUrl('${f.id}')" class="faculty-plus-btn ${currentUserSession?.role==='faculty'?'':'hidden'} w-full py-1.5 rounded-lg bg-cyan-600/15 border border-cyan-500/30 text-cyan-300 text-[11px] font-semibold"><i class="fa-solid fa-link mr-1"></i>Add URL</button>
+            </div></div>`;}).join('') : `<div class="col-span-full text-center text-xs text-slate-500 py-4">No custom folders yet. Faculty can create one above.</div>`;
     }
 
     function triggerFolderUpload(category) {
@@ -1229,31 +1331,40 @@
       if (uploadedNativeDocs.length === 0) {
         list.innerHTML = `
           <div class="p-4 bg-dark-850/60 rounded-xl border border-white/5 text-center text-slate-500 italic">
-            No files currently in repository. Faculty can upload documents using the folder [+] buttons above.
+            No files currently in repository. Faculty can upload documents or add URLs using the folder controls above.
           </div>
         `;
         return;
       }
 
       list.innerHTML = uploadedNativeDocs.map((doc, idx) => {
-        const isPdf = doc.type.includes('pdf');
-        const icon = isPdf ? 'fa-file-pdf text-rose-400' : 'fa-file-image text-emerald-400';
+        const isUrl = !!doc.isUrl;
+        const isPdf = !isUrl && (doc.type || '').includes('pdf');
+        const isImage = !isUrl && (doc.type || '').includes('image');
+        const icon = isUrl ? 'fa-link text-cyan-400' : isPdf ? 'fa-file-pdf text-rose-400' : isImage ? 'fa-file-image text-emerald-400' : 'fa-file text-cyan-400';
+        const folderName = doc.folderName || getFolderDisplayName(doc.category || 'General');
         return `
           <div class="p-3 bg-dark-850/80 rounded-xl border border-white/5 hover:border-indigo-500/30 flex items-center justify-between transition-all">
             <div class="flex items-center space-x-3 truncate pr-2">
               <i class="fa-solid ${icon} text-base shrink-0"></i>
               <div class="truncate">
-                <div class="font-semibold text-white text-xs truncate">${doc.name}</div>
-                <div class="text-[10px] text-slate-400">Folder: <span class="text-indigo-400 uppercase font-mono">${doc.category || 'General'}</span> • Uploaded by ${doc.uploader} • ${doc.size}</div>
+                <div class="font-semibold text-white text-xs truncate">${escapeHtml(doc.name)}</div>
+                <div class="text-[10px] text-slate-400">${isUrl ? 'URL' : 'File'} • Folder: <span class="text-indigo-400 font-mono">${escapeHtml(folderName)}</span> • Added by ${escapeHtml(doc.uploader || 'Faculty')}</div>
               </div>
             </div>
             <div class="flex items-center space-x-2 shrink-0">
-              <button onclick="viewUploadedFileByIndex(${idx})" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all">
-                <i class="fa-solid fa-eye text-[11px]"></i> <span>View Document</span>
-              </button>
-              <a href="${doc.dataUrl}" download="${doc.name}" class="p-1.5 px-2 bg-dark-750 hover:bg-dark-700 text-slate-300 rounded-lg text-xs transition-all" title="Download">
-                <i class="fa-solid fa-download"></i>
-              </a>
+              ${isUrl ? `
+                <button onclick="openFolderUrlByIndex(${idx})" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all">
+                  <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i> <span>Open Link</span>
+                </button>
+              ` : `
+                <button onclick="viewUploadedFileByIndex(${idx})" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all">
+                  <i class="fa-solid fa-eye text-[11px]"></i> <span>View Document</span>
+                </button>
+                <a href="${doc.dataUrl}" download="${escapeHtml(doc.name)}" class="p-1.5 px-2 bg-dark-750 hover:bg-dark-700 text-slate-300 rounded-lg text-xs transition-all" title="Download">
+                  <i class="fa-solid fa-download"></i>
+                </a>
+              `}
               ${currentUserSession && currentUserSession.role === 'faculty' ? `
                 <button onclick="deleteUploadedFile(${idx})" class="p-1.5 px-2 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white rounded-lg text-xs transition-all" title="Delete">
                   <i class="fa-solid fa-trash-can"></i>
@@ -1265,10 +1376,20 @@
       }).join('');
     }
 
+    function openFolderUrlByIndex(idx) {
+      const item = uploadedNativeDocs[idx];
+      if (!item || !item.isUrl || !item.url) return;
+      window.open(item.url, '_blank', 'noopener,noreferrer');
+    }
+
     function viewUploadedFileByIndex(idx) {
       const doc = uploadedNativeDocs[idx];
       if (!doc) return;
-      openNativeViewer(doc.dataUrl, doc.type, doc.name, `Folder: ${doc.category ? doc.category.toUpperCase() : 'General'} • ${doc.uploader}`);
+      if (doc.isUrl) {
+        openFolderUrlByIndex(idx);
+        return;
+      }
+      openNativeViewer(doc.dataUrl, doc.type, doc.name, `Folder: ${doc.category ? getFolderDisplayName(doc.category) : 'General'} • ${doc.uploader || 'Faculty'}`);
     }
 
     function deleteUploadedFile(idx) {
