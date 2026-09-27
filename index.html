@@ -24,7 +24,86 @@
   
   <!-- Marked.js for formatting Gemini Markdown responses -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Document Portal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    button {
+      background-color: #0070f3;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    ul {
+      margin-top: 20px;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
 
+  <h1>Client Documents</h1>
+  <p>Upload a file or document to generate a public link for clients.</p>
+
+  <!-- Upload Button -->
+  <button id="upload-widget">Upload Document</button>
+
+  <h3>Uploaded Files:</h3>
+  <ul id="file-list"></ul>
+
+  <!-- Cloudinary Upload Widget CDN -->
+  <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+
+  <script>
+    // Replace these two values with your actual Cloudinary credentials
+    const CLOUD_NAME = "njzbnrlk";
+    const UPLOAD_PRESET = "my_docs_preset";
+
+    const myWidget = cloudinary.createUploadWidget(
+      {
+        cloudName: CLOUD_NAME,
+        uploadPreset: UPLOAD_PRESET,
+        sources: ["local", "url", "camera"], // Allowed upload sources
+        multiple: true                       // Allow multiple file selection
+      },
+      (error, result) => {
+        if (!error && result && result.event === "success") {
+          const fileUrl = result.info.secure_url;
+          const originalName = result.info.original_filename || "Document";
+
+          // Add uploaded file link to the screen
+          const list = document.getElementById("file-list");
+          const item = document.createElement("li");
+          item.innerHTML = `<a href="${fileUrl}" target="_blank" rel="noopener noreferrer">${originalName} (View / Download)</a>`;
+          list.appendChild(item);
+        }
+      }
+    );
+
+    document.getElementById("upload-widget").addEventListener("click", () => {
+      myWidget.open();
+    });
+  </script>
+</body>
+</html>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -3285,6 +3364,32 @@ Always output all mathematical formulas, symbols, fractions, powers, and derivat
       );
       window.open(`https://api.whatsapp.com/send?text=${shareText}`, '_blank');
     }
+
+    // localStorage is shared only between tabs using the same browser profile and origin.
+    // Refresh those tabs immediately when a PIN, roster, progress record, or chat changes.
+    function handleLocalStorageSync(event) {
+      const key = event.key;
+
+      if (key === null || key === 'bec_students_roster_v2') {
+        students = getStoredStudents();
+        renderRosterTable();
+        refreshQuizPlayerStats();
+        initLeaderboard();
+      }
+
+      if (key === null || (typeof key === 'string' && key.startsWith('pin_'))) {
+        renderRosterTable();
+      }
+
+      if (key === null || key === getChatStorageKey()) {
+        loadChatMessages();
+      }
+
+      if (key === null || (typeof key === 'string' && key === getProgressKey())) {
+        refreshProgressDashboard();
+      }
+    }
+    window.addEventListener('storage', handleLocalStorageSync);
 
     window.addEventListener('DOMContentLoaded', () => {
       triggerMathRendering();
