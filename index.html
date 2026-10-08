@@ -23,11 +23,7 @@
   
   <!-- Marked.js for formatting Gemini Markdown responses -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-  <!-- Supabase Free Tier JavaScript SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <script>
+<script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -118,20 +114,58 @@
         </button>
       </div>
 
-      <!-- STUDENT LOGIN FORM: Supabase Auth accounts are shared across devices. -->
+      <!-- STUDENT LOGIN FORM -->
       <div id="studentAuthPane">
         <div id="csnStepBox" class="space-y-4">
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">Enter 10-Digit CSN Number</label>
             <div class="relative">
-              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-mono text-sm"><i class="fa-solid fa-id-card"></i></span>
-              <input type="text" id="inputCSN" placeholder="e.g., 2026010300" maxlength="10" autocomplete="username"
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-mono text-sm">
+                <i class="fa-solid fa-id-card"></i>
+              </span>
+              <input type="text" id="inputCSN" placeholder="e.g., 2026010300" maxlength="10"
                 onkeydown="if(event.key==='Enter') { event.preventDefault(); verifyStudentCSN(); }"
                 class="w-full bg-dark-850 border border-slate-700/70 rounded-xl py-2.5 pl-10 pr-4 text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"/>
             </div>
-            <p class="text-[11px] text-slate-400 mt-1.5">Faculty creates your class account and gives you a temporary password. Contact Faculty Admin if you do not have one.</p>
+            <p class="text-[11px] text-slate-400 mt-1.5">Press <kbd class="px-1.5 py-0.5 rounded bg-dark-750 border border-white/10 text-[10px] text-slate-300 font-mono">Enter ↵</kbd> or click below to verify.</p>
           </div>
-          <button type="button" onclick="verifyStudentCSN()" class="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2"><span>Continue with CSN</span><i class="fa-solid fa-arrow-right text-xs"></i></button>
+          <button type="button" onclick="verifyStudentCSN()" class="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
+            <span>Verify CSN</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+
+        <div id="firstTimePinBox" class="hidden space-y-4 pt-2">
+          <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+            <div class="text-xs text-emerald-400 font-medium flex items-center">
+              <i class="fa-solid fa-circle-check mr-2"></i> Identity Verified
+            </div>
+            <div id="firstTimeNameBadge" class="text-sm font-bold text-white mt-1"></div>
+            <div id="firstTimeDetailsBadge" class="text-xs text-slate-300 font-mono"></div>
+          </div>
+          <p class="text-xs text-amber-300/90 bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/20">
+            <i class="fa-solid fa-key mr-1"></i> <strong>First-Time Setup:</strong> Create a private 4-digit PIN.
+          </p>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Create 4-Digit PIN</label>
+              <input type="password" id="newStudentPin" maxlength="4" placeholder="••••"
+                onkeydown="if(event.key==='Enter') { event.preventDefault(); document.getElementById('confirmStudentPin').focus(); }"
+                class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2 px-3 text-center text-lg font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Confirm 4-Digit PIN</label>
+              <input type="password" id="confirmStudentPin" maxlength="4" placeholder="••••"
+                onkeydown="if(event.key==='Enter') { event.preventDefault(); finalizeNewPin(); }"
+                class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2 px-3 text-center text-lg font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500"/>
+            </div>
+          </div>
+          <button type="button" onclick="finalizeNewPin()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/30 transition-all">
+            Save PIN & Open Hub (Enter ↵)
+          </button>
+          <button type="button" onclick="resetStudentAuthFlow()" class="w-full text-xs text-slate-400 hover:text-white pt-1">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Back to CSN
+          </button>
         </div>
 
         <div id="returningPinBox" class="hidden space-y-4 pt-2">
@@ -141,38 +175,48 @@
             <div id="returningDetailsBadge" class="text-xs text-slate-300 font-mono"></div>
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Account Password</label>
-            <input type="password" id="loginStudentPin" maxlength="128" autocomplete="current-password" placeholder="Enter your password"
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Enter Your 4-Digit PIN</label>
+            <input type="password" id="loginStudentPin" maxlength="4" placeholder="••••"
               onkeydown="if(event.key==='Enter') { event.preventDefault(); authenticateReturningStudent(); }"
-              class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2.5 px-3 text-center text-sm text-white focus:outline-none focus:border-indigo-500"/>
+              class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2.5 px-3 text-center text-xl font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500"/>
           </div>
-          <button type="button" onclick="authenticateReturningStudent()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all">Sign In</button>
-          <button type="button" onclick="resetStudentAuthFlow()" class="w-full text-xs text-slate-400 hover:text-white pt-1"><i class="fa-solid fa-arrow-left mr-1"></i>Switch CSN</button>
+          <button type="button" onclick="authenticateReturningStudent()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all">
+            Authorize Entry (Enter ↵)
+          </button>
+          <div class="flex justify-between items-center text-xs pt-1">
+            <button type="button" onclick="resetStudentAuthFlow()" class="text-slate-400 hover:text-white">
+              <i class="fa-solid fa-arrow-left mr-1"></i> Switch CSN
+            </button>
+            <span class="text-slate-500">Forgot PIN? Contact Prof. Jayashree</span>
+          </div>
         </div>
       </div>
 
       <!-- FACULTY ADMIN LOGIN FORM -->
       <div id="facultyAuthPane" class="hidden space-y-4">
         <div class="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-indigo-600/30 text-indigo-400 flex items-center justify-center font-bold text-sm">JG</div>
-          <div><div class="text-xs text-indigo-400 uppercase font-semibold">Faculty In-Charge</div><div class="text-sm font-bold text-white">Prof. Dr. Jayashree G Ghantimath</div><div class="text-[11px] text-slate-400">Course: 1BPHS102C / 22PHY12</div></div>
+          <div class="w-10 h-10 rounded-full bg-indigo-600/30 text-indigo-400 flex items-center justify-center font-bold text-sm">
+            JG
+          </div>
+          <div>
+            <div class="text-xs text-indigo-400 uppercase font-semibold">Faculty In-Charge</div>
+            <div class="text-sm font-bold text-white">Prof. Dr. Jayashree G Ghantimath</div>
+            <div class="text-[11px] text-slate-400">Course: 1BPHS102C / 22PHY12</div>
+          </div>
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1.5">Faculty Email</label>
-          <input type="email" id="inputFacultyEmail" autocomplete="username" placeholder="Faculty email address"
-            onkeydown="if(event.key==='Enter') { event.preventDefault(); document.getElementById('inputFacultyPassword').focus(); }"
-            class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-indigo-500"/>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1.5">Faculty Password</label>
-          <input type="password" id="inputFacultyPassword" autocomplete="current-password" placeholder="Enter your password"
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">Faculty Administrative PIN</label>
+          <input type="password" id="inputFacultyPin" maxlength="6" placeholder="••••"
             onkeydown="if(event.key==='Enter') { event.preventDefault(); authenticateFaculty(); }"
-            class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-indigo-500"/>
+            class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2.5 px-3 text-center text-xl font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500"/>
+          <p class="text-[11px] text-slate-400 mt-1.5 text-center">Initial default PIN: <span class="font-mono text-indigo-400">1010</span> • Press <kbd class="px-1.5 py-0.5 rounded bg-dark-750 border border-white/10 text-[10px] text-slate-300 font-mono">Enter ↵</kbd></p>
         </div>
-        <button type="button" onclick="authenticateFaculty()" class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all">Sign In to Faculty Admin</button>
-        <button type="button" onclick="sendFacultyPasswordReset()" class="w-full text-[11px] text-indigo-300 hover:text-white py-1">Send password reset email</button>
-        <p class="text-[10px] text-slate-500 text-center">Faculty accounts must be created and authorized in Supabase before sign-in.</p>
+        <button type="button" onclick="authenticateFaculty()" class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all">
+          Unlock Professor Command
+        </button>
+        <button type="button" onclick="openFacultyRecoveryModal()" class="w-full text-[11px] text-indigo-300 hover:text-white py-1">Forgot Faculty PIN? Use recovery key</button>
       </div>
+
       <div id="authNotice" class="hidden mt-4 p-2.5 rounded-lg text-xs font-medium text-center"></div>
 
       <div class="mt-6 pt-4 border-t border-white/5 text-center text-[11px] text-slate-500">
@@ -180,9 +224,21 @@
         Physics Cycle • Room 101 • Academic Year 2026-27
         <div class="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px]">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="backendStatusIndicator">Connecting to Supabase Cloud...</span>
+          <span id="storageStatusIndicator">Browser storage ready</span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ================= FACULTY PIN RECOVERY MODAL ================= -->
+  <div id="facultyRecoveryModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-dark-900/90 backdrop-blur-md">
+    <div class="glass-card max-w-md w-full p-6 rounded-2xl border border-amber-500/30 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center"><h3 class="text-sm font-bold text-white"><i class="fa-solid fa-key text-amber-400 mr-2"></i>Faculty PIN Recovery</h3><button type="button" onclick="closeFacultyRecoveryModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="text-xs text-slate-300">For this academic prototype, recovery uses a local recovery key.</p>
+      <input id="facultyRecoveryKey" type="password" class="w-full bg-dark-850 border border-slate-700 rounded-xl px-3 py-2.5 text-white" placeholder="Enter recovery key"/>
+      <input id="facultyRecoveryNewPin" type="password" maxlength="6" class="w-full bg-dark-850 border border-slate-700 rounded-xl px-3 py-2.5 text-white" placeholder="New faculty PIN (4–6 digits)"/>
+      <button type="button" onclick="recoverFacultyPin()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-semibold">Reset Faculty PIN</button>
+      <p class="text-[10px] text-slate-500 text-center">Default demo recovery key: <span class="font-mono">PHYSICS-ROOM101</span></p>
     </div>
   </div>
 
@@ -356,22 +412,33 @@
     </div>
   </div>
 
-  <!-- ================= ACCOUNT PASSWORD MODAL ================= -->
+  <!-- ================= PIN CHANGE MODAL ================= -->
   <div id="pinChangeModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-dark-900/90 backdrop-blur-md">
     <div class="glass-card max-w-sm w-full p-6 rounded-2xl border border-white/10 shadow-2xl space-y-4">
       <div class="flex justify-between items-center">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-key text-indigo-400"></i> Update Account Password</h3>
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-key text-indigo-400"></i> Update Security PIN
+        </h3>
         <button type="button" onclick="closePinChangeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div>
-        <label class="block text-xs text-slate-300 mb-1">New Password (at least 8 characters)</label>
-        <input type="password" id="changeNewPin" minlength="8" maxlength="128" autocomplete="new-password"
-          onkeydown="if(event.key==='Enter') { event.preventDefault(); saveUpdatedPin(); }"
-          class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2 px-3 text-sm text-white"/>
+        <label class="block text-xs text-slate-300 mb-1">Current PIN</label>
+        <input type="password" id="changeOldPin" maxlength="6" 
+          onkeydown="if(event.key==='Enter') { event.preventDefault(); document.getElementById('changeNewPin').focus(); }"
+          class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2 px-3 text-center text-sm font-mono text-white"/>
       </div>
-      <button type="button" onclick="saveUpdatedPin()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow transition-all">Update Password</button>
+      <div>
+        <label class="block text-xs text-slate-300 mb-1">New PIN</label>
+        <input type="password" id="changeNewPin" maxlength="6" 
+          onkeydown="if(event.key==='Enter') { event.preventDefault(); saveUpdatedPin(); }"
+          class="w-full bg-dark-850 border border-slate-700 rounded-xl py-2 px-3 text-center text-sm font-mono text-white"/>
+      </div>
+      <button type="button" onclick="saveUpdatedPin()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow transition-all">
+        Update PIN Now (Enter ↵)
+      </button>
     </div>
   </div>
+
   <!-- ================= MAIN CONTENT WRAPPER ================= -->
   <div class="app-content min-h-screen flex flex-col justify-between">
 
@@ -420,9 +487,9 @@
         </div>
 
         <div class="flex items-center space-x-2.5">
-          <div id="cloudSyncBadge" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[11px] font-semibold flex items-center gap-1.5">
-            <i class="fa-solid fa-cloud"></i>
-            <span id="cloudSyncText">Supabase Ready</span>
+          <div id="localStorageBadge" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[11px] font-semibold flex items-center gap-1.5">
+            <i class="fa-solid fa-hard-drive"></i>
+            <span id="localStorageText">On-device</span>
           </div>
           <button type="button" onclick="shareOnWhatsApp()" title="Share Room 101 Link" class="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white border border-emerald-500/30 transition-all text-xs font-semibold flex items-center space-x-1.5">
             <i class="fa-brands fa-whatsapp text-sm"></i>
@@ -434,7 +501,7 @@
               <div id="sessionUserName" class="text-xs font-bold text-white">Guest</div>
               <div id="sessionUserRole" class="text-[10px] text-indigo-400 font-mono">Unauthenticated</div>
             </div>
-            <button type="button" onclick="openPinChangeModal()" title="Change Account Password" class="w-8 h-8 rounded-lg bg-dark-750 hover:bg-indigo-600/30 text-indigo-400 border border-white/10 flex items-center justify-center transition-all">
+            <button type="button" onclick="openPinChangeModal()" title="Change PIN" class="w-8 h-8 rounded-lg bg-dark-750 hover:bg-indigo-600/30 text-indigo-400 border border-white/10 flex items-center justify-center transition-all">
               <i class="fa-solid fa-key text-xs"></i>
             </button>
             <button type="button" onclick="promptLogout()" title="Change User / Logout" class="w-8 h-8 rounded-lg bg-dark-750 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-white/10 flex items-center justify-center transition-all">
@@ -497,8 +564,8 @@
           </div>
           <div class="glass-card p-4 rounded-xl border border-white/5">
             <div class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Storage Engine</div>
-            <div id="metricEngineText" class="text-2xl font-extrabold text-emerald-400 mt-1 font-mono">Supabase Free</div>
-            <div class="text-[11px] text-emerald-400 mt-1">PostgreSQL & Cloud Bucket</div>
+            <div id="metricEngineText" class="text-2xl font-extrabold text-emerald-400 mt-1 font-mono">This Browser</div>
+            <div class="text-[11px] text-emerald-400 mt-1">Stored on this device</div>
           </div>
         </div>
 
@@ -550,7 +617,7 @@
             <div class="glass-card p-5 rounded-xl border border-white/5">
               <div class="flex items-center justify-between mb-3">
                 <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-bolt text-amber-400 mr-2"></i>Recent Activity</h3>
-                <span class="text-[11px] text-slate-500">Live Synchronized</span>
+                <span class="text-[11px] text-slate-500">Class activity</span>
               </div>
               <div id="progressActivityList" class="space-y-2 max-h-52 overflow-y-auto custom-scroll pr-1"></div>
             </div>
@@ -705,7 +772,7 @@
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
               <i class="fa-solid fa-folder-open text-amber-400"></i> Course Materials, Syllabus & Exam Sets
             </h2>
-            <p class="text-xs text-slate-400">Stored and synchronized via Supabase Storage Bucket. Click <strong>[ + ]</strong> to upload files.</p>
+            <p class="text-xs text-slate-400">Files are stored on this device. Click <strong>[ + ]</strong> to upload files.</p>
           </div>
         </div>
 
@@ -814,9 +881,9 @@
         <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-cloud text-indigo-400"></i> All Room 101 Native Files Repository
+              <i class="fa-solid fa-hard-drive text-indigo-400"></i> Room 101 Files on This Device
             </h3>
-            <span id="repoSyncStatusText" class="text-[11px] text-slate-400">Cloud Synchronized</span>
+            <span id="repoStorageStatusText" class="text-[11px] text-slate-400">On-device files</span>
           </div>
           <div id="uploadedFilesList" class="space-y-2.5 text-xs text-slate-300 pt-2">
             <div class="p-4 bg-dark-850/60 rounded-xl border border-white/5 text-center text-slate-500 italic">
@@ -871,7 +938,7 @@
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
               <i class="fa-solid fa-comments text-emerald-400"></i> Room 101 Classroom Messaging
             </h2>
-            <p class="text-xs text-slate-400">Real-time Cloud synchronized discussion for Room 101.</p>
+            <p class="text-xs text-slate-400">Room 101 discussion saved in this browser.</p>
           </div>
           <div class="flex p-1 bg-dark-850 rounded-xl border border-white/5 text-xs">
             <button type="button" onclick="switchChatChannel('group')" id="btnChatGroup" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold">General Broadcast</button>
@@ -984,91 +1051,251 @@
   <!-- ================= JAVASCRIPT APPLICATION CORE ================= -->
   <script>
     // -------------------------------------------------------------
-    // 0. SUPABASE AUTHENTICATION, DATABASE, AND CLOUD STATUS
+    // 0. LOCAL-ONLY CLASSROOM STORAGE
+    // All classroom records stay in this browser. Uploaded files use IndexedDB.
     // -------------------------------------------------------------
-    let sbClient = null;
-    let isSupabaseActive = false;
-    let supabaseStatusMessage = 'Checking Supabase connection...';
-    let rosterRealtimeChannel = null;
-    let documentsRealtimeChannel = null;
-    let messagesRealtimeChannel = null;
-    let contentRealtimeChannel = null;
-    const SUPABASE_URL = "https://qrpoquigzghbmklspjte.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFycG9xdWlnemdoYm1rbHNwanRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODU2MzAsImV4cCI6MjEwNjI2MTYzMH0.1RygGpYniq1eg5lQ-zGgli5_35Djq83FtS3igaoxmmc";
-    const STUDENT_EMAIL_SUFFIX = '@students.room101.invalid';
+    let isLocalStoreReady = true;
+    let localStoreStatusMessage = 'Browser storage is ready.';
 
-    try {
-      if (window.supabase && typeof window.supabase.createClient === 'function') {
-        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-          auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
-        });
-      } else {
-        supabaseStatusMessage = 'Supabase JavaScript SDK did not load.';
-      }
-    } catch (e) {
-      supabaseStatusMessage = e.message || 'Supabase client could not start.';
-      console.warn('Supabase init error:', e);
-    }
+    const localTableKeys = {
+      roster: 'bec_students_roster_v2',
+      student_pins: 'bec_local_student_pins_v1',
+      student_progress: 'bec_local_student_progress_v1',
+      documents: 'bec_local_documents_v1',
+      classroom_content: 'bec_local_classroom_content_v1',
+      messages: 'bec_local_messages_v1'
+    };
 
-    async function initializeSupabaseConnection() {
-      if (!sbClient) {
-        updateBackendStatusUI();
-        return false;
-      }
-      supabaseStatusMessage = 'Checking Supabase Auth...';
-      updateBackendStatusUI();
+    function readLocalTable(tableName) {
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        const response = await fetch(SUPABASE_URL + '/auth/v1/health', {
-          headers: { apikey: SUPABASE_ANON_KEY },
-          cache: 'no-store',
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        isSupabaseActive = true;
-        supabaseStatusMessage = 'Supabase API online. Sign in to sync class data.';
+        const raw = localStorage.getItem(localTableKeys[tableName] || ('bec_local_' + tableName + '_v1'));
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
       } catch (error) {
-        isSupabaseActive = false;
-        supabaseStatusMessage = 'Supabase unavailable: ' + (error.name === 'AbortError' ? 'connection timed out' : (error.message || 'check your network'));
+        return [];
       }
-      updateBackendStatusUI();
-      return isSupabaseActive;
     }
 
-    function updateBackendStatusUI() {
-      const ind = document.getElementById('backendStatusIndicator');
-      const badge = document.getElementById('cloudSyncBadge');
-      const badgeText = document.getElementById('cloudSyncText');
+    function writeLocalTable(tableName, rows) {
+      localStorage.setItem(localTableKeys[tableName] || ('bec_local_' + tableName + '_v1'), JSON.stringify(rows));
+    }
+
+    function newLocalId() {
+      return 'local_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+    }
+
+    class LocalQueryBuilder {
+      constructor(tableName) {
+        this.tableName = tableName;
+        this.action = 'select';
+        this.payload = null;
+        this.filters = [];
+        this.sortBy = null;
+        this.returnRows = false;
+        this.singleMode = null;
+        this.conflictColumns = '';
+      }
+      select() { if (this.action !== 'select') this.returnRows = true; return this; }
+      insert(rows) { this.action = 'insert'; this.payload = rows; return this; }
+      upsert(rows, options = {}) { this.action = 'upsert'; this.payload = rows; this.conflictColumns = options.onConflict || ''; return this; }
+      update(values) { this.action = 'update'; this.payload = values; return this; }
+      delete() { this.action = 'delete'; return this; }
+      eq(field, value) { this.filters.push(row => row[field] === value); return this; }
+      in(field, values) { this.filters.push(row => values.includes(row[field])); return this; }
+      not(field, operator, value) {
+        this.filters.push(row => operator === 'is' && value === null ? row[field] !== null && row[field] !== undefined : row[field] !== value);
+        return this;
+      }
+      order(field, options = {}) { this.sortBy = { field, ascending: options.ascending !== false }; return this; }
+      single() { this.singleMode = 'single'; return this.execute(); }
+      maybeSingle() { this.singleMode = 'maybeSingle'; return this.execute(); }
+      then(resolve, reject) { return this.execute().then(resolve, reject); }
+      async execute() {
+        try {
+          let rows = readLocalTable(this.tableName);
+          const matches = row => this.filters.every(filter => filter(row));
+          let changed = [];
+          if (this.action === 'insert' || this.action === 'upsert') {
+            const incoming = (Array.isArray(this.payload) ? this.payload : [this.payload]).filter(Boolean);
+            const conflictColumns = this.conflictColumns.split(',').map(value => value.trim()).filter(Boolean);
+            incoming.forEach(input => {
+              const row = { ...input };
+              if (!row.id) row.id = newLocalId();
+              if (!row.created_at) row.created_at = new Date().toISOString();
+              let index = -1;
+              if (this.action === 'upsert') {
+                const keys = conflictColumns.length ? conflictColumns : (row.csn ? ['csn'] : row.content_key ? ['content_key'] : row.id ? ['id'] : []);
+                if (keys.length) index = rows.findIndex(existing => keys.every(key => existing[key] === row[key]));
+              }
+              if (index >= 0) {
+                rows[index] = { ...rows[index], ...row };
+                changed.push(rows[index]);
+              } else {
+                rows.push(row);
+                changed.push(row);
+              }
+            });
+            writeLocalTable(this.tableName, rows);
+          } else if (this.action === 'update') {
+            rows = rows.map(row => {
+              if (!matches(row)) return row;
+              const updated = { ...row, ...this.payload };
+              changed.push(updated);
+              return updated;
+            });
+            writeLocalTable(this.tableName, rows);
+          } else if (this.action === 'delete') {
+            changed = rows.filter(matches);
+            rows = rows.filter(row => !matches(row));
+            writeLocalTable(this.tableName, rows);
+          } else {
+            changed = rows.filter(matches);
+          }
+
+          if (this.sortBy) {
+            const { field, ascending } = this.sortBy;
+            changed.sort((a, b) => {
+              const av = a[field];
+              const bv = b[field];
+              const cmp = av === bv ? 0 : av == null ? -1 : bv == null ? 1 : (typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv)));
+              return ascending ? cmp : -cmp;
+            });
+          }
+
+          let data = (this.action === 'select' || this.returnRows || this.singleMode) ? changed : null;
+          if (this.singleMode === 'single') {
+            if (!data || data.length !== 1) return { data: null, error: new Error('Expected one local record.') };
+            data = data[0];
+          } else if (this.singleMode === 'maybeSingle') {
+            if (!data || data.length > 1) return { data: null, error: data && data.length > 1 ? new Error('Expected at most one local record.') : null };
+            data = data[0] || null;
+          }
+          return { data, error: null };
+        } catch (error) {
+          return { data: null, error };
+        }
+      }
+    }
+
+    const localObjectUrls = new Map();
+    let localFileDbPromise = null;
+    function openLocalFileDb() {
+      if (localFileDbPromise) return localFileDbPromise;
+      localFileDbPromise = new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error('This browser does not support local file storage.'));
+        const request = indexedDB.open('ai-classroom-hub-local-files', 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains('files')) request.result.createObjectStore('files');
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('Could not open local file storage.'));
+      });
+      return localFileDbPromise;
+    }
+    function localFileRequest(mode, operation) {
+      return openLocalFileDb().then(db => new Promise((resolve, reject) => {
+        const transaction = db.transaction('files', mode);
+        const request = operation(transaction.objectStore('files'));
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('Could not access a locally stored file.'));
+      }));
+    }
+    function localFileFallbackKey(path) { return 'bec_local_file_' + encodeURIComponent(path); }
+    async function saveLocalFile(path, file) {
+      try { await localFileRequest('readwrite', store => store.put(file, path)); }
+      catch (error) {
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(reader.error || error);
+          reader.readAsDataURL(file);
+        });
+        localStorage.setItem(localFileFallbackKey(path), JSON.stringify({ dataUrl, name: file.name || '', type: file.type || '' }));
+      }
+    }
+    async function readLocalFile(path) {
+      try {
+        const file = await localFileRequest('readonly', store => store.get(path));
+        if (file) return file;
+      } catch (error) {}
+      const raw = localStorage.getItem(localFileFallbackKey(path));
+      if (!raw) return null;
+      const saved = JSON.parse(raw);
+      const blob = await fetch(saved.dataUrl).then(response => response.blob());
+      return new File([blob], saved.name || 'classroom-file', { type: saved.type || blob.type });
+    }
+    const localStore = {
+      from(tableName) { return new LocalQueryBuilder(tableName); },
+      storage: {
+        from() {
+          return {
+            async upload(path, file) {
+              try { await saveLocalFile(path, file); return { data: { path }, error: null }; }
+              catch (error) { return { data: null, error }; }
+            },
+            async remove(paths) {
+              try {
+                for (const path of paths || []) {
+                  try { await localFileRequest('readwrite', store => store.delete(path)); } catch (error) {}
+                  localStorage.removeItem(localFileFallbackKey(path));
+                  if (localObjectUrls.has(path)) { URL.revokeObjectURL(localObjectUrls.get(path)); localObjectUrls.delete(path); }
+                }
+                return { data: paths || [], error: null };
+              } catch (error) { return { data: null, error }; }
+            },
+            async createSignedUrl(path) {
+              try {
+                const file = await readLocalFile(path);
+                if (!file) throw new Error('This file is not stored in this browser.');
+                if (localObjectUrls.has(path)) URL.revokeObjectURL(localObjectUrls.get(path));
+                const signedUrl = URL.createObjectURL(file);
+                localObjectUrls.set(path, signedUrl);
+                return { data: { signedUrl }, error: null };
+              } catch (error) { return { data: null, error }; }
+            }
+          };
+        }
+      }
+    };
+
+    async function initializeLocalStorage() {
+      try {
+        const key = '__bec_local_storage_check__';
+        localStorage.setItem(key, 'ok');
+        localStorage.removeItem(key);
+        isLocalStoreReady = true;
+        localStoreStatusMessage = 'Browser storage is ready. Classroom data stays on this device.';
+      } catch (error) {
+        isLocalStoreReady = false;
+        localStoreStatusMessage = 'Browser storage is unavailable. Enable site storage in your browser.';
+      }
+      updateLocalStorageStatusUI();
+      return isLocalStoreReady;
+    }
+
+    function updateLocalStorageStatusUI() {
+      const ind = document.getElementById('storageStatusIndicator');
+      const badge = document.getElementById('localStorageBadge');
+      const badgeText = document.getElementById('localStorageText');
       const engineText = document.getElementById('metricEngineText');
-      const repoSyncText = document.getElementById('repoSyncStatusText');
+      const repoStorageText = document.getElementById('repoStorageStatusText');
       const signedIn = !!currentUserSession;
-
-      if (isSupabaseActive) {
-        if (ind) ind.textContent = signedIn ? 'Supabase Authenticated • Cloud Sync' : 'Supabase Online • Sign in to sync';
-        if (badge) badge.className = 'px-2.5 py-1.5 rounded-xl ' + (signedIn ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-amber-500/10 text-amber-300 border-amber-500/20') + ' border text-[11px] font-semibold flex items-center gap-1.5';
-        if (badgeText) badgeText.textContent = signedIn ? 'Cloud Sync Active' : 'Sign-in Required';
-        if (engineText) engineText.textContent = 'Supabase Auth';
-        if (repoSyncText) repoSyncText.textContent = signedIn ? 'Authenticated Cloud Repository' : 'Sign in to sync repository';
-      } else {
-        if (ind) ind.textContent = supabaseStatusMessage || 'Supabase unavailable';
-        if (badge) badge.className = 'px-2.5 py-1.5 rounded-xl bg-rose-500/10 text-rose-300 border border-rose-500/20 text-[11px] font-semibold flex items-center gap-1.5';
-        if (badgeText) badgeText.textContent = 'Cloud Offline';
-        if (engineText) engineText.textContent = 'Unavailable';
-        if (repoSyncText) repoSyncText.textContent = 'Cloud unavailable';
-      }
+      if (ind) ind.textContent = signedIn ? 'PIN session • Saved in this browser' : localStoreStatusMessage;
+      if (badge) badge.className = 'px-2.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 border text-[11px] font-semibold flex items-center gap-1.5';
+      if (badgeText) badgeText.textContent = signedIn ? 'On-device storage' : 'Browser storage ready';
+      if (engineText) engineText.textContent = 'This Browser';
+      if (repoStorageText) repoStorageText.textContent = signedIn ? 'Files stored on this device' : 'Sign in to view classroom files';
     }
 
-    function reportCloudError(operation, error) {
+    function reportLocalStorageError(operation, error) {
       const detail = error && error.message ? error.message : String(error || 'Unknown error');
       console.error(operation + ' failed:', error);
-      const indicator = document.getElementById('backendStatusIndicator');
-      const badge = document.getElementById('cloudSyncBadge');
-      const badgeText = document.getElementById('cloudSyncText');
+      const indicator = document.getElementById('storageStatusIndicator');
+      const badge = document.getElementById('localStorageBadge');
+      const badgeText = document.getElementById('localStorageText');
       if (indicator) indicator.textContent = operation + ' failed: ' + detail;
       if (badge) badge.className = 'px-2.5 py-1.5 rounded-xl bg-rose-500/10 text-rose-300 border border-rose-500/20 text-[11px] font-semibold flex items-center gap-1.5';
-      if (badgeText) badgeText.textContent = 'Sync Error';
+      if (badgeText) badgeText.textContent = 'Local save error';
     }
     // THREE.JS 3D CANVAS & GSAP
     // -------------------------------------------------------------
@@ -1155,7 +1382,7 @@
     }
 
     // -------------------------------------------------------------
-    // 1. ROSTER DATABASE (55 STUDENTS)
+    // 1. LOCAL CLASS ROSTER (55 STUDENTS)
     // -------------------------------------------------------------
     const initialStudents = [
       { roll: 1, name: "MALLIKARJUN CHANDRAM DUNAGI", csn: "2026010074", gender: "Male", branch: "CSE" },
@@ -1221,12 +1448,13 @@
       }));
       try {
         const stored = localStorage.getItem('bec_students_roster_v2');
-        if (!stored) {
+        const parsed = stored ? JSON.parse(stored) : null;
+        if (!Array.isArray(parsed) || (parsed.length === 0 && initialStudents.length > 0)) {
           const list = buildInitial();
           localStorage.setItem('bec_students_roster_v2', JSON.stringify(list));
           return list;
         }
-        return JSON.parse(stored);
+        return parsed;
       } catch (e) {
         return buildInitial();
       }
@@ -1238,19 +1466,19 @@
     let currentViewingDocUrl = null;
     let targetFolderCategory = null;
 
-    async function syncRosterWithSupabase() {
-      if (!isSupabaseActive || !sbClient || !currentUserSession) return;
+    async function loadLocalRoster() {
+      if (!isLocalStoreReady || !localStore || !currentUserSession) return;
       try {
-        const { data, error } = await sbClient.from('roster').select('*').order('roll', { ascending: true });
+        const { data, error } = await localStore.from('roster').select('*').order('roll', { ascending: true });
         if (error) throw error;
         if (!Array.isArray(data) || data.length === 0) {
-          throw new Error('The cloud roster is empty. Run supabase_setup.sql in the Supabase SQL Editor first.');
+          throw new Error('The local roster is empty. Add students in Faculty mode.');
         }
         students = data;
         localStorage.setItem('bec_students_roster_v2', JSON.stringify(students));
         if (currentUserSession.role === 'student') {
           const signedInStudent = students.find(s => s.csn === currentUserSession.csn);
-          if (!signedInStudent) throw new Error('Your CSN is not in the cloud roster.');
+          if (!signedInStudent) throw new Error('Your CSN is not in this browser’s roster.');
           currentUserSession = { ...signedInStudent, role: 'student', authUserId: currentUserSession.authUserId };
         }
         renderRosterTable();
@@ -1258,27 +1486,12 @@
         populateFacultyDMSel();
         refreshQuizPlayerStats();
       } catch (error) {
-        reportCloudError('Roster sync', error);
+        reportLocalStorageError('Load local roster', error);
       }
 
-      if (!rosterRealtimeChannel) {
-        rosterRealtimeChannel = sbClient.channel('room101:roster')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'roster' }, async () => {
-            const { data, error } = await sbClient.from('roster').select('*').order('roll', { ascending: true });
-            if (error) return reportCloudError('Roster refresh', error);
-            if (Array.isArray(data)) {
-              students = data;
-              localStorage.setItem('bec_students_roster_v2', JSON.stringify(students));
-              renderRosterTable();
-              initLeaderboard();
-              refreshQuizPlayerStats();
-            }
-          })
-          .subscribe();
-      }
     }
     // -------------------------------------------------------------
-    // 2. DOCUMENT REPOSITORY ENGINE (SUPABASE STORAGE & DB)
+    // 2. ON-DEVICE DOCUMENT REPOSITORY
     // -------------------------------------------------------------
     function getUploadedDocumentUrl(doc) {
       if (!doc) return '';
@@ -1288,10 +1501,10 @@
     async function getDocumentAccessUrl(doc) {
       if (!doc) return '';
       if (doc.type === 'text/url') return doc.file_url || doc.url || doc.publicUrl || '';
-      if (doc.storage_path && sbClient && isSupabaseActive) {
-        const { data, error } = await sbClient.storage.from('documents').createSignedUrl(doc.storage_path, 3600);
+      if (doc.storage_path && localStore && isLocalStoreReady) {
+        const { data, error } = await localStore.storage.from('documents').createSignedUrl(doc.storage_path, 3600);
         if (error) throw error;
-        if (!data || !data.signedUrl) throw new Error('Supabase did not return a signed document link.');
+        if (!data || !data.signedUrl) throw new Error('The local file could not be opened.');
         return data.signedUrl;
       }
       return getUploadedDocumentUrl(doc);
@@ -1307,7 +1520,7 @@
     let uploadedNativeDocs = getStoredNativeDocs();
 
     async function migrateLegacyLocalDocuments() {
-      if (!isSupabaseActive || !sbClient || currentUserSession?.role !== 'faculty') return;
+      if (!isLocalStoreReady || !localStore || currentUserSession?.role !== 'faculty') return;
       const legacyDocs = uploadedNativeDocs.filter(doc =>
         String(doc.id || '').startsWith('doc_') ||
         String(doc.id || '').startsWith('link_') ||
@@ -1317,7 +1530,7 @@
         let uploadedPath = null;
         try {
           if (doc.type === 'text/url' || doc.isUrl) {
-            const { error } = await sbClient.from('documents').insert({
+            const { error } = await localStore.from('documents').insert({
               name: doc.name,
               category: doc.category || 'syllabus',
               folder_name: doc.folderName || getFolderDisplayName(doc.category || 'syllabus'),
@@ -1335,13 +1548,13 @@
             });
             const cleanName = String(doc.name || 'document').replace(/[^a-zA-Z0-9._-]/g, '_');
             uploadedPath = (doc.category || 'syllabus') + '/' + crypto.randomUUID() + '_' + cleanName;
-            const { error: uploadError } = await sbClient.storage.from('documents').upload(uploadedPath, blob, {
+            const { error: uploadError } = await localStore.storage.from('documents').upload(uploadedPath, blob, {
               cacheControl: '3600',
               upsert: false,
               contentType: doc.type || blob.type || 'application/octet-stream'
             });
             if (uploadError) throw uploadError;
-            const { error: rowError } = await sbClient.from('documents').insert({
+            const { error: rowError } = await localStore.from('documents').insert({
               name: doc.name,
               category: doc.category || 'syllabus',
               folder_name: doc.folderName || getFolderDisplayName(doc.category || 'syllabus'),
@@ -1352,7 +1565,7 @@
               uploader: currentUserSession.name
             });
             if (rowError) {
-              await sbClient.storage.from('documents').remove([uploadedPath]);
+              await localStore.storage.from('documents').remove([uploadedPath]);
               throw rowError;
             }
           } else {
@@ -1361,14 +1574,14 @@
           uploadedNativeDocs = uploadedNativeDocs.filter(item => item.id !== doc.id);
           localStorage.setItem('room101_uploaded_docs_v2', JSON.stringify(uploadedNativeDocs));
         } catch (error) {
-          reportCloudError('Legacy file migration', error);
+          reportLocalStorageError('Legacy file migration', error);
           break;
         }
       }
     }
 
-    async function syncDocumentsWithSupabase() {
-      if (!isSupabaseActive || !sbClient || !currentUserSession) return;
+    async function loadLocalDocuments() {
+      if (!isLocalStoreReady || !localStore || !currentUserSession) return;
       try {
         await migrateLegacyLocalDocuments();
         const localOnly = uploadedNativeDocs.filter(doc =>
@@ -1376,7 +1589,7 @@
           String(doc.id || '').startsWith('link_') ||
           !!doc.dataUrl
         );
-        const { data, error } = await sbClient.from('documents').select('*').order('created_at', { ascending: false });
+        const { data, error } = await localStore.from('documents').select('*').order('created_at', { ascending: false });
         if (error) throw error;
         const remoteDocs = (data || []).map(d => ({
           id: d.id,
@@ -1399,22 +1612,15 @@
         renderFolderLists();
         renderUploadedFileList();
       } catch (error) {
-        reportCloudError('Document sync', error);
+        reportLocalStorageError('Load local documents', error);
       }
 
-      if (!documentsRealtimeChannel) {
-        documentsRealtimeChannel = sbClient.channel('room101:documents')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, () => {
-            syncDocumentsWithSupabase();
-          })
-          .subscribe();
-      }
     }
     async function persistClassroomContent(contentKey, content) {
-      if (!isSupabaseActive || !sbClient || currentUserSession?.role !== 'faculty') {
-        throw new Error('Only an authenticated Faculty Admin can update shared classroom content.');
+      if (!isLocalStoreReady || !localStore || currentUserSession?.role !== 'faculty') {
+        throw new Error('Only Faculty Admin can update classroom content.');
       }
-      const { error } = await sbClient.from('classroom_content').upsert({
+      const { error } = await localStore.from('classroom_content').upsert({
         content_key: contentKey,
         content,
         updated_by: currentUserSession.authUserId
@@ -1422,10 +1628,10 @@
       if (error) throw error;
     }
 
-    async function syncClassroomContentWithSupabase() {
-      if (!isSupabaseActive || !sbClient || !currentUserSession) return;
+    async function loadLocalClassroomContent() {
+      if (!isLocalStoreReady || !localStore || !currentUserSession) return;
       try {
-        const { data, error } = await sbClient.from('classroom_content')
+        const { data, error } = await localStore.from('classroom_content')
           .select('content_key,content')
           .in('content_key', ['custom_folders', 'quiz_bank']);
         if (error) throw error;
@@ -1459,16 +1665,9 @@
         renderUploadedFileList();
         if (document.getElementById('quizActiveContainer') && !document.getElementById('quizActiveContainer').classList.contains('hidden')) renderCurrentQuestion();
       } catch (error) {
-        reportCloudError('Classroom content sync', error);
+        reportLocalStorageError('Load local classroom content', error);
       }
 
-      if (!contentRealtimeChannel) {
-        contentRealtimeChannel = sbClient.channel('room101:classroom-content')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'classroom_content' }, () => {
-            syncClassroomContentWithSupabase();
-          })
-          .subscribe();
-      }
     }
     function getFolderDisplayName(category) {
       if (String(category).startsWith('custom_')) {
@@ -1491,8 +1690,8 @@
       const file = event.target.files && event.target.files[0];
       const category = targetFolderCategory;
       if (!file || !category) return;
-      if (!isSupabaseActive || !sbClient || !currentUserSession) {
-        alert('Sign in to Supabase before uploading. Files will not be saved only on this device.');
+      if (!isLocalStoreReady || !localStore || !currentUserSession) {
+        alert('Sign in before uploading. Files will be stored in this browser only.');
         event.target.value = '';
         targetFolderCategory = null;
         return;
@@ -1514,14 +1713,14 @@
       const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const filePath = category + '/' + crypto.randomUUID() + '_' + cleanName;
       try {
-        const { error: uploadError } = await sbClient.storage.from('documents').upload(filePath, file, {
+        const { error: uploadError } = await localStore.storage.from('documents').upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
           contentType: file.type || 'application/octet-stream'
         });
         if (uploadError) throw uploadError;
 
-        const { error: insertError } = await sbClient.from('documents').insert({
+        const { error: insertError } = await localStore.from('documents').insert({
           name: file.name,
           category,
           folder_name: folderName,
@@ -1532,17 +1731,17 @@
           uploader: currentUserSession.name
         });
         if (insertError) {
-          await sbClient.storage.from('documents').remove([filePath]);
+          await localStore.storage.from('documents').remove([filePath]);
           throw insertError;
         }
 
-        await syncDocumentsWithSupabase();
+        await loadLocalDocuments();
         trigger3DPunch();
-        alert('Document "' + file.name + '" uploaded to Supabase and synced to the classroom.');
-      } catch (cloudError) {
-        reportCloudError('Cloud upload', cloudError);
-        const detail = cloudError && cloudError.message ? cloudError.message : String(cloudError);
-        alert('Upload failed and was not saved locally. ' + detail + (detail.toLowerCase().includes('bucket') ? ' Create the documents bucket by running supabase_setup.sql.' : ' Check the Supabase setup and faculty account permissions.'));
+        alert('Document "' + file.name + '" saved in this browser.');
+      } catch (saveError) {
+        reportLocalStorageError('Save uploaded file', saveError);
+        const detail = saveError && saveError.message ? saveError.message : String(saveError);
+        alert('Upload failed. ' + detail);
       } finally {
         targetFolderCategory = null;
         event.target.value = '';
@@ -1553,8 +1752,8 @@
         alert('Permission denied. Only Faculty Admin can add documents.');
         return;
       }
-      if (!isSupabaseActive || !sbClient) {
-        alert('Supabase is unavailable. This link will not be saved only on this device.');
+      if (!isLocalStoreReady || !localStore) {
+        alert('Browser storage is unavailable, so this link cannot be saved.');
         return;
       }
       const folderName = getFolderDisplayName(category);
@@ -1569,7 +1768,7 @@
       if (!name || !name.trim()) return;
 
       try {
-        const { error } = await sbClient.from('documents').insert({
+        const { error } = await localStore.from('documents').insert({
           name: name.trim(),
           category,
           folder_name: folderName,
@@ -1580,12 +1779,12 @@
           uploader: currentUserSession.name
         });
         if (error) throw error;
-        await syncDocumentsWithSupabase();
+        await loadLocalDocuments();
         trigger3DPunch();
-        alert('Link "' + name.trim() + '" added to Supabase and synced.');
+        alert('Link "' + name.trim() + '" saved in this browser.');
       } catch (error) {
-        reportCloudError('Add repository link', error);
-        alert('The link was not saved. ' + (error.message || 'Check Supabase table permissions.'));
+        reportLocalStorageError('Add repository link', error);
+        alert('The link was not saved. ' + (error.message || 'Check browser storage settings.'));
       }
     }
     function closeFolderContents() {
@@ -1673,8 +1872,8 @@
         await saveCustomFolders(folders);
         renderCustomFolders();
       } catch (error) {
-        reportCloudError('Create folder', error);
-        alert('Folder was not saved to the cloud. ' + (error.message || 'Check Supabase permissions.'));
+        reportLocalStorageError('Create folder', error);
+        alert('Folder was not saved in this browser. ' + (error.message || 'Check browser storage settings.'));
       }
     }
 
@@ -1688,7 +1887,7 @@
       const oldName = folder.name;
       folder.name = name.trim();
       try {
-        const { error } = await sbClient.from('documents').update({ folder_name: folder.name }).eq('category', id);
+        const { error } = await localStore.from('documents').update({ folder_name: folder.name }).eq('category', id);
         if (error) throw error;
         await saveCustomFolders(folders);
         uploadedNativeDocs.forEach(doc => { if (doc.category === id) doc.folderName = folder.name; });
@@ -1697,8 +1896,8 @@
         renderUploadedFileList();
       } catch (error) {
         folder.name = oldName;
-        reportCloudError('Rename folder', error);
-        alert('Folder rename was not fully saved. ' + (error.message || 'Check Supabase permissions.'));
+        reportLocalStorageError('Rename folder', error);
+        alert('Folder rename was not saved. ' + (error.message || 'Check browser storage settings.'));
       }
     }
 
@@ -1707,16 +1906,16 @@
       const folders = getCustomFolders();
       const folder = folders.find(item => item.id === id);
       if (!folder) return;
-      const cloudRows = uploadedNativeDocs.filter(doc => doc.category === id);
-      if (!confirm('Delete folder "' + folder.name + '" and its ' + cloudRows.length + ' item(s)?')) return;
+      const localRows = uploadedNativeDocs.filter(doc => doc.category === id);
+      if (!confirm('Delete folder "' + folder.name + '" and its ' + localRows.length + ' item(s)?')) return;
       try {
-        for (const doc of cloudRows) {
+        for (const doc of localRows) {
           if (doc.storage_path) {
-            const { error: storageError } = await sbClient.storage.from('documents').remove([doc.storage_path]);
+            const { error: storageError } = await localStore.storage.from('documents').remove([doc.storage_path]);
             if (storageError) throw storageError;
           }
           if (!String(doc.id || '').startsWith('doc_') && !String(doc.id || '').startsWith('link_')) {
-            const { error } = await sbClient.from('documents').delete().eq('id', doc.id);
+            const { error } = await localStore.from('documents').delete().eq('id', doc.id);
             if (error) throw error;
           }
         }
@@ -1726,8 +1925,8 @@
         renderFolderLists();
         renderUploadedFileList();
       } catch (error) {
-        reportCloudError('Delete folder', error);
-        alert('Folder or its files could not be fully deleted. ' + (error.message || 'Check Supabase permissions.'));
+        reportLocalStorageError('Delete folder', error);
+        alert('Folder or its files could not be fully deleted. ' + (error.message || 'Check browser storage settings.'));
       }
     }
     function renderCustomFolders() {
@@ -1806,8 +2005,8 @@
         const url = await getDocumentAccessUrl(doc);
         openNativeViewer(url, doc.type, doc.name, 'Folder: ' + (doc.category ? getFolderDisplayName(doc.category) : 'General') + ' • ' + (doc.uploader || 'Faculty'));
       } catch (error) {
-        reportCloudError('Open document', error);
-        alert('Could not open this document. ' + (error.message || 'Check your Supabase Storage setup.'));
+        reportLocalStorageError('Open document', error);
+        alert('Could not open this document. ' + (error.message || 'Check that this browser still has the saved file.'));
       }
     }
 
@@ -1819,8 +2018,8 @@
         const url = await getDocumentAccessUrl(doc);
         window.open(url, '_blank', 'noopener,noreferrer');
       } catch (error) {
-        reportCloudError('Download document', error);
-        alert('Could not download this document. ' + (error.message || 'Check your Supabase Storage setup.'));
+        reportLocalStorageError('Download document', error);
+        alert('Could not download this document. ' + (error.message || 'Check that this browser still has the saved file.'));
       }
     }
 
@@ -1830,12 +2029,12 @@
       if (!doc) return;
       if (!confirm('Delete "' + doc.name + '" from course repository?')) return;
       try {
-        if (isSupabaseActive && sbClient && !String(docId || '').startsWith('doc_') && !String(docId || '').startsWith('link_')) {
-          const { data, error } = await sbClient.from('documents').delete().eq('id', docId).select('id');
+        if (isLocalStoreReady && localStore && !String(docId || '').startsWith('doc_') && !String(docId || '').startsWith('link_')) {
+          const { data, error } = await localStore.from('documents').delete().eq('id', docId).select('id');
           if (error) throw error;
-          if (!data || data.length === 0) throw new Error('Supabase did not delete the document row. Check the faculty RLS policy.');
+          if (!data || data.length === 0) throw new Error('The local document record could not be deleted.');
           if (doc.storage_path) {
-            const { error: storageError } = await sbClient.storage.from('documents').remove([doc.storage_path]);
+            const { error: storageError } = await localStore.storage.from('documents').remove([doc.storage_path]);
             if (storageError) throw storageError;
           }
         }
@@ -1845,8 +2044,8 @@
         renderUploadedFileList();
         alert('Document removed from the classroom repository.');
       } catch (error) {
-        reportCloudError('Delete document', error);
-        alert('The document could not be fully deleted. ' + (error.message || 'Check Supabase permissions.'));
+        reportLocalStorageError('Delete document', error);
+        alert('The document could not be fully deleted. ' + (error.message || 'Check browser storage settings.'));
       }
     }
     function openNativeViewer(url, type, title, subtitle) {
@@ -1985,11 +2184,9 @@
 
     async function validateGeminiApiKey(apiKey) {
       await getGeminiGenerateContentModels(apiKey);
-      const data = await requestGeminiWithFallback(apiKey, {
-        contents: [{ role: 'user', parts: [{ text: 'Reply with the single word OK.' }] }],
-        generationConfig: { maxOutputTokens: 8, temperature: 0 }
+      await requestGeminiWithFallback(apiKey, {
+        contents: [{ role: 'user', parts: [{ text: 'Reply with the single word OK.' }] }]
       });
-      extractGeminiText(data);
       return true;
     }
     function openGeminiKeyModal() {
@@ -2114,7 +2311,7 @@
         localStorage.setItem('bec_custom_quiz_bank', JSON.stringify(quizQuestionBank));
         currentQIndex = 0;
         trigger3DPunch();
-        alert('Generated and synced ' + parsed.length + ' questions to the class.');
+        alert('Generated and saved ' + parsed.length + ' questions in this browser.');
         closeAiQuizModal();
         renderCurrentQuestion();
       } catch (err) {
@@ -2220,7 +2417,7 @@
     }
 
     // -------------------------------------------------------------
-    // 4. SUPABASE AUTHENTICATION
+    // 4. AUTHENTICATION & PIN SECURITY
     // -------------------------------------------------------------
     function switchAuthTab(tab) {
       const studentTab = document.getElementById('tabStudentBtn');
@@ -2228,14 +2425,15 @@
       const studentPane = document.getElementById('studentAuthPane');
       const facultyPane = document.getElementById('facultyAuthPane');
       hideAuthNotice();
+
       if (tab === 'student') {
-        studentTab.className = 'flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow transition-all';
-        facultyTab.className = 'flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
+        studentTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow transition-all";
+        facultyTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
         studentPane.classList.remove('hidden');
         facultyPane.classList.add('hidden');
       } else {
-        facultyTab.className = 'flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow transition-all';
-        studentTab.className = 'flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
+        facultyTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow transition-all";
+        studentTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
         facultyPane.classList.remove('hidden');
         studentPane.classList.add('hidden');
       }
@@ -2243,227 +2441,248 @@
 
     function showAuthNotice(msg, isError = true) {
       const notice = document.getElementById('authNotice');
-      notice.className = 'mt-4 p-2.5 rounded-lg text-xs font-medium text-center border ' +
-        (isError ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20');
+      notice.className = `mt-4 p-2.5 rounded-lg text-xs font-medium text-center border ${isError ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`;
       notice.textContent = msg;
       notice.classList.remove('hidden');
     }
 
     function hideAuthNotice() {
-      const notice = document.getElementById('authNotice');
-      if (notice) notice.classList.add('hidden');
+      document.getElementById('authNotice').classList.add('hidden');
     }
 
-    function studentAuthEmail(csn) {
-      return String(csn).trim() + STUDENT_EMAIL_SUFFIX;
+    async function hashStudentPin(pin) {
+      if (!window.crypto || !window.crypto.subtle || !window.TextEncoder) throw new Error('PIN setup requires a current browser. Open this page in current Chrome or Edge.');
+      const digest = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(pin)));
+      return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('');
     }
-
-    async function loadAuthProfile(authUser) {
-      if (!authUser || !sbClient) throw new Error('No authenticated Supabase user was returned.');
-      const { data, error } = await sbClient.from('user_profiles')
-        .select('id,role,csn,full_name')
-        .eq('id', authUser.id)
-        .single();
-      if (error) throw new Error('Could not load your account profile: ' + error.message);
-      if (!data || !['student', 'faculty'].includes(data.role)) throw new Error('This account has no valid classroom role.');
-      if (data.role === 'faculty') {
-        return {
-          name: data.full_name || 'Faculty Admin',
-          role: 'faculty',
-          csn: data.csn || 'FACULTY-PHYSICS-01',
-          authUserId: authUser.id,
-          email: authUser.email
-        };
-      }
-      const { data: student, error: rosterError } = await sbClient.from('roster')
-        .select('*')
-        .eq('csn', data.csn)
-        .maybeSingle();
-      if (rosterError) throw new Error('Could not load your cloud roster record: ' + rosterError.message);
-      if (!student) throw new Error('This student account is not in the cloud roster.');
-      return { ...student, name: data.full_name || student.name, role: 'student', authUserId: authUser.id, email: authUser.email };
-    }
-
-    function verifyStudentCSN() {
+    async function verifyStudentCSN() {
       hideAuthNotice();
-      if (!isSupabaseActive || !sbClient) return showAuthNotice('Supabase is offline. Check the connection status before signing in.');
       const csn = document.getElementById('inputCSN').value.trim();
       if (!/^\d{10}$/.test(csn)) return showAuthNotice('Please enter your 10-digit CSN number.');
-
-      const match = students.find(student => student.csn === csn);
-      currentAuthStudent = match || { roll: '', name: 'Division B Student', csn, branch: 'CSE' };
-      document.getElementById('csnStepBox').classList.add('hidden');
-      document.getElementById('returningNameBadge').textContent = currentAuthStudent.name;
-      document.getElementById('returningDetailsBadge').textContent = (currentAuthStudent.roll ? 'Roll: ' + currentAuthStudent.roll + ' • ' : '') + 'CSN: ' + csn;
-      document.getElementById('returningPinBox').classList.remove('hidden');
-      setTimeout(() => document.getElementById('loginStudentPin').focus(), 50);
-      trigger3DPunch();
+      if (!isLocalStoreReady || !localStore) return showAuthNotice('Browser storage is unavailable. Enable browser storage and reload.');
+      try {
+        const { data: rosterRow, error: rosterError } = await localStore.from('roster').select('*').eq('csn', csn).maybeSingle();
+        if (rosterError) throw rosterError;
+        if (!rosterRow) return showAuthNotice('CSN not found in this browser’s roster. Ask faculty to check the roster on this device.');
+        const { data: pinRow, error: pinError } = await localStore.from('student_pins').select('pin_hash').eq('csn', csn).maybeSingle();
+        if (pinError) throw pinError;
+        let pinHash = pinRow?.pin_hash || null;
+        if (!pinRow) {
+          const oldLocalPin = localStorage.getItem('pin_' + csn);
+          if (oldLocalPin && /^\d{4}$/.test(oldLocalPin)) {
+            pinHash = await hashStudentPin(oldLocalPin);
+            const { error } = await localStore.from('student_pins').upsert({ csn: csn, pin_hash: pinHash, updated_at: new Date().toISOString() }, { onConflict: 'csn' });
+            if (error) throw error;
+          }
+        }
+        currentAuthStudent = { ...rosterRow, pin_hash: pinHash, pin_record_exists: !!pinRow };
+        document.getElementById('csnStepBox').classList.add('hidden');
+        trigger3DPunch();
+        if (!pinHash) {
+          localStorage.removeItem('pin_' + csn);
+          document.getElementById('firstTimeNameBadge').textContent = rosterRow.name;
+          document.getElementById('firstTimeDetailsBadge').textContent = (rosterRow.roll ? 'Roll: ' + rosterRow.roll + ' • ' : '') + 'CSN: ' + csn;
+          document.getElementById('firstTimePinBox').classList.remove('hidden');
+          setTimeout(() => document.getElementById('newStudentPin').focus(), 100);
+        } else {
+          document.getElementById('returningNameBadge').textContent = rosterRow.name;
+          document.getElementById('returningDetailsBadge').textContent = (rosterRow.roll ? 'Roll: ' + rosterRow.roll + ' • ' : '') + 'CSN: ' + csn;
+          document.getElementById('returningPinBox').classList.remove('hidden');
+          setTimeout(() => document.getElementById('loginStudentPin').focus(), 100);
+        }
+      } catch (error) {
+        const detail = error.message || 'Try again in this browser.';
+        const denied = error.code === '42501' || /permission denied|row-level security/i.test(detail);
+        showAuthNotice(denied ? 'The roster could not be read from this browser. Enable browser storage and reload.' : 'Could not verify this CSN. ' + detail);
+      }
     }
-
+    async function finalizeNewPin() {
+      hideAuthNotice();
+      if (!currentAuthStudent) return showAuthNotice('Verify your CSN first.');
+      const pin = document.getElementById('newStudentPin').value.trim();
+      const confirmPin = document.getElementById('confirmStudentPin').value.trim();
+      if (!/^\d{4}$/.test(pin)) return showAuthNotice('PIN must be exactly 4 numeric digits.');
+      if (pin !== confirmPin) return showAuthNotice('PIN confirmation does not match.');
+      try {
+        const pinHash = await hashStudentPin(pin);
+        const { error } = await localStore.from('student_pins').upsert({ csn: currentAuthStudent.csn, pin_hash: pinHash, updated_at: new Date().toISOString() }, { onConflict: 'csn' });
+        if (error) throw error;
+        localStorage.setItem('pin_' + currentAuthStudent.csn, pin);
+        await completeLoginSession(currentAuthStudent, 'student');
+      } catch (error) {
+        showAuthNotice('Could not save your PIN in this browser. ' + (error.message || 'Check browser storage settings.'));
+      }
+    }
     async function authenticateReturningStudent() {
       hideAuthNotice();
       if (!currentAuthStudent) return showAuthNotice('Verify your CSN first.');
-      const password = document.getElementById('loginStudentPin').value;
-      if (!password) return showAuthNotice('Enter your account password.');
+      const pin = document.getElementById('loginStudentPin').value.trim();
+      if (!/^\d{4}$/.test(pin)) return showAuthNotice('Enter your 4-digit PIN.');
       try {
-        const { data, error } = await sbClient.auth.signInWithPassword({
-          email: studentAuthEmail(currentAuthStudent.csn),
-          password
-        });
+        const { data, error } = await localStore.from('student_pins').select('pin_hash').eq('csn', currentAuthStudent.csn).maybeSingle();
         if (error) throw error;
-        const profile = await loadAuthProfile(data.user);
-        if (profile.role !== 'student' || profile.csn !== currentAuthStudent.csn) {
-          await sbClient.auth.signOut();
-          throw new Error('The signed-in account does not match this student CSN.');
+        if (!data || !data.pin_hash) {
+          document.getElementById('returningPinBox').classList.add('hidden');
+          document.getElementById('firstTimeNameBadge').textContent = currentAuthStudent.name;
+          document.getElementById('firstTimeDetailsBadge').textContent = (currentAuthStudent.roll ? 'Roll: ' + currentAuthStudent.roll + ' • ' : '') + 'CSN: ' + currentAuthStudent.csn;
+          document.getElementById('firstTimePinBox').classList.remove('hidden');
+          document.getElementById('newStudentPin').focus();
+          return showAuthNotice('Faculty reset your PIN. Create a new 4-digit PIN.');
         }
-        await completeLoginSession(profile, 'student');
+        if (await hashStudentPin(pin) !== data.pin_hash) return showAuthNotice('Incorrect 4-digit PIN.');
+        localStorage.setItem('pin_' + currentAuthStudent.csn, pin);
+        await completeLoginSession(currentAuthStudent, 'student');
       } catch (error) {
-        showAuthNotice(error.message || 'Sign-in failed. Check your CSN and password.');
+        showAuthNotice('Could not check your PIN in this browser. ' + (error.message || 'Try again.'));
       }
     }
-
-    async function authenticateFaculty() {
+    function resetStudentAuthFlow() {
+      document.getElementById('firstTimePinBox').classList.add('hidden');
+      document.getElementById('returningPinBox').classList.add('hidden');
+      document.getElementById('csnStepBox').classList.remove('hidden');
+      document.getElementById('inputCSN').value = '';
       hideAuthNotice();
-      if (!isSupabaseActive || !sbClient) return showAuthNotice('Supabase is offline. Check the connection status before signing in.');
-      const email = document.getElementById('inputFacultyEmail').value.trim().toLowerCase();
-      const password = document.getElementById('inputFacultyPassword').value;
-      if (!email || !password) return showAuthNotice('Enter your faculty email and password.');
-      try {
-        const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        const profile = await loadAuthProfile(data.user);
-        if (profile.role !== 'faculty') {
-          await sbClient.auth.signOut();
-          throw new Error('This account is not authorized for Faculty Admin.');
-        }
-        await completeLoginSession(profile, 'faculty');
-      } catch (error) {
-        showAuthNotice(error.message || 'Faculty sign-in failed.');
-      }
     }
 
-    async function sendFacultyPasswordReset() {
-      const email = document.getElementById('inputFacultyEmail').value.trim().toLowerCase();
-      if (!email) return showAuthNotice('Enter your faculty email first.');
-      try {
-        const { error } = await sbClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
-        if (error) throw error;
-        showAuthNotice('If that faculty account exists, Supabase has sent a password reset email.', false);
-      } catch (error) {
-        showAuthNotice(error.message || 'Could not send the reset email.');
+    function authenticateFaculty() {
+      const pin = document.getElementById('inputFacultyPin').value.trim();
+      const storedFacultyPin = localStorage.getItem('bec_faculty_pin') || '1010';
+      if (pin === storedFacultyPin) {
+        completeLoginSession({
+          name: "Prof. Dr. Jayashree G Ghantimath",
+          role: "faculty",
+          csn: "FACULTY-PHYSICS-01"
+        }, 'faculty');
+      } else {
+        showAuthNotice("Invalid Administrative PIN.");
       }
     }
 
     async function completeLoginSession(userObj, role, options = {}) {
       currentUserSession = { ...userObj, role };
+      if (options.persist !== false) {
+        try { sessionStorage.setItem('bec_room101_session_v1', JSON.stringify({ role, csn: userObj.csn })); } catch (error) {}
+      }
       refreshQuizPlayerStats();
       document.getElementById('authGate').classList.add('hidden');
       document.getElementById('sessionUserName').textContent = userObj.name;
       document.getElementById('sessionUserRole').textContent = role === 'faculty' ? 'Faculty Admin' : 'Roll ' + userObj.roll + ' • ' + userObj.csn;
       document.querySelectorAll('.faculty-plus-btn').forEach(btn => btn.classList.toggle('hidden', role !== 'faculty'));
-      if (document.getElementById('facultyAddMemberBtn')) document.getElementById('facultyAddMemberBtn').classList.toggle('hidden', role !== 'faculty');
-      if (document.getElementById('facultyAddQuestionBtn')) document.getElementById('facultyAddQuestionBtn').classList.toggle('hidden', role !== 'faculty');
-      if (document.getElementById('facultyAiQuizBtn')) document.getElementById('facultyAiQuizBtn').classList.toggle('hidden', role !== 'faculty');
-      if (document.getElementById('facultyResetStandingsBtn')) document.getElementById('facultyResetStandingsBtn').classList.toggle('hidden', role !== 'faculty');
-
+      ['facultyAddMemberBtn', 'facultyAddQuestionBtn', 'facultyAiQuizBtn', 'facultyResetStandingsBtn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.toggle('hidden', role !== 'faculty');
+      });
       renderRosterTable();
       populateFacultyDMSel();
       loadSelectedLab('1');
       initLeaderboard();
       await Promise.allSettled([
-        syncRosterWithSupabase(),
-        syncDocumentsWithSupabase(),
-        syncClassroomContentWithSupabase(),
-        syncStudentProgressFromSupabase(),
+        loadLocalRoster(),
+        loadLocalDocuments(),
+        loadLocalClassroomContent(),
+        loadLocalStudentProgress(),
         loadChatMessages()
       ]);
-      syncChatWithSupabase();
-      refreshQuizPlayerStats();
-      refreshProgressDashboard();
       renderFolderLists();
+      renderCustomFolders();
       renderUploadedFileList();
+      refreshProgressDashboard();
+      refreshQuizPlayerStats();
       updateGeminiStatusUI();
-      updateBackendStatusUI();
+      updateLocalStorageStatusUI();
       triggerMathRendering();
-      const viewId = options.viewId || 'dashboard';
-      navigateTo(viewId);
+      navigateTo(options.viewId || 'dashboard');
       trigger3DPunch();
     }
-
-    async function promptLogout() {
-      if (!confirm('Log out of Room 101?')) return;
-      try {
-        if (sbClient) {
-          await sbClient.removeAllChannels();
-          rosterRealtimeChannel = null;
-          documentsRealtimeChannel = null;
-          messagesRealtimeChannel = null;
-          contentRealtimeChannel = null;
-          await sbClient.auth.signOut();
-        }
-      } catch (error) {
-        reportCloudError('Sign out', error);
+    function promptLogout() {
+      if (confirm("Log out of Room 101?")) {
+        currentUserSession = null;
+        try {
+          sessionStorage.removeItem('bec_room101_session_v1');
+          sessionStorage.removeItem('bec_room101_active_view_v1');
+        } catch (error) {}
+        navigateTo('dashboard');
+        document.getElementById('authGate').classList.remove('hidden');
+        resetStudentAuthFlow();
       }
-      currentUserSession = null;
-      try { sessionStorage.removeItem('bec_room101_active_view_v1'); } catch (error) {}
-      navigateTo('dashboard');
-      document.getElementById('authGate').classList.remove('hidden');
-      resetStudentAuthFlow();
-      updateBackendStatusUI();
     }
 
-    async function restoreLoginSession() {
-      if (!sbClient || !isSupabaseActive) return;
+    function restoreLoginSession() {
+      let savedSession;
       try {
-        const { data, error } = await sbClient.auth.getSession();
-        if (error) throw error;
-        const user = data.session?.user;
-        if (!user) return;
-        const profile = await loadAuthProfile(user);
-        let savedView = 'dashboard';
-        try {
-          const candidate = sessionStorage.getItem('bec_room101_active_view_v1');
-          if (['dashboard', 'labs', 'quiz', 'repository', 'roster', 'chat', 'tutor'].includes(candidate)) savedView = candidate;
-        } catch (error) {}
-        await completeLoginSession(profile, profile.role, { viewId: savedView });
+        savedSession = JSON.parse(sessionStorage.getItem('bec_room101_session_v1') || 'null');
       } catch (error) {
-        reportCloudError('Restore sign-in', error);
-        try { await sbClient.auth.signOut(); } catch (ignore) {}
+        savedSession = null;
       }
+      if (!savedSession || !['student', 'faculty'].includes(savedSession.role)) return;
+
+      let user = null;
+      if (savedSession.role === 'faculty' && savedSession.csn === 'FACULTY-PHYSICS-01') {
+        user = {
+          name: 'Prof. Dr. Jayashree G Ghantimath',
+          role: 'faculty',
+          csn: 'FACULTY-PHYSICS-01'
+        };
+      } else if (savedSession.role === 'student') {
+        user = students.find(student => student.csn === savedSession.csn) || null;
+      }
+      if (!user) {
+        try { sessionStorage.removeItem('bec_room101_session_v1'); } catch (error) {}
+        return;
+      }
+
+      let savedView = 'dashboard';
+      try {
+        const candidate = sessionStorage.getItem('bec_room101_active_view_v1');
+        if (['dashboard', 'labs', 'quiz', 'repository', 'roster', 'chat', 'tutor'].includes(candidate)) savedView = candidate;
+      } catch (error) {}
+      completeLoginSession(user, savedSession.role, { persist: false, viewId: savedView });
     }
 
     function openPinChangeModal() {
-      if (!currentUserSession || !sbClient) return;
+      if (!currentUserSession) return;
+      document.getElementById('changeOldPin').value = '';
       document.getElementById('changeNewPin').value = '';
       document.getElementById('pinChangeModal').classList.remove('hidden');
     }
-
-    function closePinChangeModal() {
-      document.getElementById('pinChangeModal').classList.add('hidden');
-    }
+    function closePinChangeModal() { document.getElementById('pinChangeModal').classList.add('hidden'); }
 
     async function saveUpdatedPin() {
-      const newPassword = document.getElementById('changeNewPin').value;
-      if (!currentUserSession || !sbClient) return;
-      if (newPassword.length < 8) return alert('Password must contain at least 8 characters.');
+      if (!currentUserSession) return;
+      const oldPin = document.getElementById('changeOldPin').value.trim();
+      const newPin = document.getElementById('changeNewPin').value.trim();
       try {
-        const { error } = await sbClient.auth.updateUser({ password: newPassword });
-        if (error) throw error;
-        alert('Account password updated.');
+        if (currentUserSession.role === 'faculty') {
+          if ((localStorage.getItem('bec_faculty_pin') || '1010') !== oldPin) return alert('Incorrect current Faculty PIN.');
+          if (!/^\d{4,6}$/.test(newPin)) return alert('Faculty PIN must be 4–6 digits.');
+          localStorage.setItem('bec_faculty_pin', newPin);
+        } else {
+          if (!/^\d{4}$/.test(newPin)) return alert('Student PIN must be exactly 4 digits.');
+          const { data, error } = await localStore.from('student_pins').select('pin_hash').eq('csn', currentUserSession.csn).maybeSingle();
+          if (error) throw error;
+          if (!data?.pin_hash || await hashStudentPin(oldPin) !== data.pin_hash) return alert('Incorrect current PIN, or faculty has reset it. Sign out and create a new PIN.');
+          const { error: updateError } = await localStore.from('student_pins').upsert({ csn: currentUserSession.csn, pin_hash: await hashStudentPin(newPin), updated_at: new Date().toISOString() }, { onConflict: 'csn' });
+          if (updateError) throw updateError;
+          localStorage.setItem('pin_' + currentUserSession.csn, newPin);
+        }
+        alert('PIN updated successfully.');
         closePinChangeModal();
-      } catch (error) {
-        alert('Password was not updated. ' + (error.message || 'Please sign in again and retry.'));
-      }
+      } catch (error) { alert('PIN was not updated. ' + (error.message || 'Check browser storage settings.')); }
+    }
+    function openFacultyRecoveryModal(){ document.getElementById('facultyRecoveryModal').classList.remove('hidden'); }
+    function closeFacultyRecoveryModal(){ document.getElementById('facultyRecoveryModal').classList.add('hidden'); }
+    function recoverFacultyPin(){
+      const key = document.getElementById('facultyRecoveryKey').value.trim();
+      const pin = document.getElementById('facultyRecoveryNewPin').value.trim();
+      if (key !== (localStorage.getItem('bec_faculty_recovery_key') || 'PHYSICS-ROOM101')) return alert('Invalid recovery key.');
+      if (!/^\d{4,6}$/.test(pin)) return alert('PIN must contain 4–6 digits.');
+      localStorage.setItem('bec_faculty_pin', pin);
+      closeFacultyRecoveryModal();
+      document.getElementById('inputFacultyPin').value = pin;
+      alert('Faculty PIN reset successfully.');
     }
 
-    function resetStudentAuthFlow() {
-      currentAuthStudent = null;
-      document.getElementById('returningPinBox').classList.add('hidden');
-      document.getElementById('csnStepBox').classList.remove('hidden');
-      document.getElementById('inputCSN').value = '';
-      document.getElementById('loginStudentPin').value = '';
-      hideAuthNotice();
-    }
+    // -------------------------------------------------------------
     // 5. STUDENT PROGRESS & CHECKPOINTS
     // -------------------------------------------------------------
     const PHYSICS_LAB_NAMES = [
@@ -2490,10 +2709,10 @@
         return { labs: [], checklists: {}, quizAttempts: 0, quizCorrect: 0, quizPoints: 0, activity: [] };
       }
     }
-    async function syncStudentProgressFromSupabase() {
-      if (!isSupabaseActive || !sbClient || !currentUserSession || currentUserSession.role !== 'student') return;
+    async function loadLocalStudentProgress() {
+      if (!isLocalStoreReady || !localStore || !currentUserSession || currentUserSession.role !== 'student') return;
       try {
-        const { data, error } = await sbClient.from('student_progress')
+        const { data, error } = await localStore.from('student_progress')
           .select('csn,labs,checklists,quiz_attempts,quiz_correct,quiz_points,activity,updated_at')
           .eq('csn', currentUserSession.csn)
           .maybeSingle();
@@ -2522,16 +2741,16 @@
         }
         refreshProgressDashboard();
       } catch (error) {
-        reportCloudError('Student progress sync', error);
+        reportLocalStorageError('Load local student progress', error);
       }
     }
 
     async function saveProgressData(d) {
       d.updatedAt = new Date().toISOString();
       try { localStorage.setItem(getProgressKey(), JSON.stringify(d)); } catch (e) {}
-      if (!isSupabaseActive || !sbClient || !currentUserSession?.csn || currentUserSession.role !== 'student') return;
+      if (!isLocalStoreReady || !localStore || !currentUserSession?.csn || currentUserSession.role !== 'student') return;
       try {
-        const { error } = await sbClient.from('student_progress').upsert({
+        const { error } = await localStore.from('student_progress').upsert({
           csn: currentUserSession.csn,
           labs: Array.isArray(d.labs) ? d.labs : [],
           checklists: d.checklists || {},
@@ -2543,7 +2762,7 @@
         }, { onConflict: 'csn' });
         if (error) throw error;
       } catch (error) {
-        reportCloudError('Save student progress', error);
+        reportLocalStorageError('Save local student progress', error);
       }
     }    function addProgressActivity(text) {
       const d = getProgressData();
@@ -2660,10 +2879,37 @@
           <td class="py-3 px-4 font-mono text-emerald-400">${isFaculty ? `<button type="button" onclick="editAttendance('${s.csn}')" class="hover:underline flex items-center gap-1">${escapeHtml(s.attendance || '0%')} <i class="fa-solid fa-pen text-[9px] text-slate-500"></i></button>` : escapeHtml(s.attendance || '0%')}</td>
         `;
         tbody.appendChild(tr);
+        if (isFaculty) {
+          const actionsCell = tr.querySelector('td:last-child');
+          const resetButton = document.createElement('button');
+          resetButton.type = 'button';
+          resetButton.className = 'ml-2 text-[10px] text-amber-300 hover:text-amber-200 hover:underline whitespace-nowrap';
+          resetButton.textContent = 'Reset PIN';
+          resetButton.title = 'Reset this student PIN in this browser';
+          resetButton.onclick = () => resetStudentPin(s.csn);
+          actionsCell.appendChild(resetButton);
+        }
       });
     }
 
     function filterRosterTable(val) { renderRosterTable(val); }
+
+    async function resetStudentPin(csn) {
+      if (!currentUserSession || currentUserSession.role !== 'faculty') return;
+      if (!isLocalStoreReady || !localStore) return alert('Browser storage is unavailable.');
+      const student = students.find(item => String(item.csn) === String(csn));
+      if (!student) return alert('Student was not found in the roster.');
+      if (!confirm('Reset the PIN for ' + student.name + ' on this browser? They will create a new PIN the next time they sign in here.')) return;
+      try {
+        const { error } = await localStore.from('student_pins').upsert({ csn: student.csn, pin_hash: null, updated_at: new Date().toISOString() }, { onConflict: 'csn' });
+        if (error) throw error;
+        localStorage.removeItem('pin_' + student.csn);
+        alert('PIN reset in this browser. ' + student.name + ' can create a new 4-digit PIN here.');
+      } catch (error) {
+        reportLocalStorageError('Reset student PIN', error);
+        alert('PIN was not reset in this browser. ' + (error.message || 'Check browser storage settings.'));
+      }
+    }
 
     async function editAttendance(csn) {
       if (!currentUserSession || currentUserSession.role !== 'faculty') return;
@@ -2674,14 +2920,14 @@
       const oldValue = st.attendance;
       st.attendance = updated.trim().includes('%') ? updated.trim() : updated.trim() + '%';
       try {
-        const { error } = await sbClient.from('roster').update({ attendance: st.attendance }).eq('csn', csn);
+        const { error } = await localStore.from('roster').update({ attendance: st.attendance }).eq('csn', csn);
         if (error) throw error;
         localStorage.setItem('bec_students_roster_v2', JSON.stringify(students));
         renderRosterTable();
       } catch (error) {
         st.attendance = oldValue;
-        reportCloudError('Update attendance', error);
-        alert('Attendance was not saved. ' + (error.message || 'Check Supabase permissions.'));
+        reportLocalStorageError('Update attendance', error);
+        alert('Attendance was not saved. ' + (error.message || 'Check browser storage settings.'));
       }
     }
     async function promptAddNewStudent() {
@@ -2693,15 +2939,15 @@
       if (students.some(student => student.csn === csn.trim())) return alert('That CSN is already in the roster.');
       const newSt = { roll: students.length + 1, name: name.trim().toUpperCase(), csn: csn.trim(), branch: 'CSE', score: 0, attendance: '0%', streak: 0, latency: '—' };
       try {
-        const { data, error } = await sbClient.from('roster').insert(newSt).select().single();
+        const { data, error } = await localStore.from('roster').insert(newSt).select().single();
         if (error) throw error;
         students.push(data || newSt);
         localStorage.setItem('bec_students_roster_v2', JSON.stringify(students));
         renderRosterTable();
         initLeaderboard();
       } catch (error) {
-        reportCloudError('Add student', error);
-        alert('Student was not added. ' + (error.message || 'Check Supabase permissions.'));
+        reportLocalStorageError('Add student', error);
+        alert('Student was not added. ' + (error.message || 'Check browser storage settings.'));
       }
     }
     // -------------------------------------------------------------
@@ -2971,8 +3217,8 @@
         renderCurrentQuestion();
       } catch (error) {
         quizQuestionBank = previous;
-        reportCloudError('Save quiz question', error);
-        alert('Question was not shared to the class. ' + (error.message || 'Check Supabase permissions.'));
+        reportLocalStorageError('Save quiz question', error);
+        alert('Question was not saved. ' + (error.message || 'Check browser storage settings.'));
       }
     }
     function startActualQuiz() {
@@ -3033,14 +3279,15 @@
 
       if (student) {
         try {
-          const { data, error } = await sbClient.rpc('record_quiz_result', {
-            p_is_correct: !!isCorrect,
-            p_points: points,
-            p_latency: elapsed + 's'
-          });
+          const nextScore = Number(student.score || 0) + points;
+          const nextStreak = isCorrect ? Number(student.streak || 0) + 1 : 0;
+          const { data: updated, error } = await localStore.from('roster')
+            .update({ score: nextScore, streak: nextStreak, latency: elapsed + 's' })
+            .eq('csn', student.csn)
+            .select()
+            .single();
           if (error) throw error;
-          const updated = Array.isArray(data) ? data[0] : data;
-          if (!updated || !updated.csn) throw new Error('Supabase did not return the updated roster row.');
+          if (!updated || !updated.csn) throw new Error('The updated roster row could not be saved locally.');
           Object.assign(student, updated);
           localStorage.setItem('bec_students_roster_v2', JSON.stringify(students));
           refreshQuizPlayerStats();
@@ -3049,7 +3296,7 @@
           recordQuizProgress(!!isCorrect, points);
         } catch (error) {
           scoreSaved = false;
-          reportCloudError('Save quiz score', error);
+          reportLocalStorageError('Save local quiz score', error);
         }
       }
 
@@ -3057,7 +3304,7 @@
         buttonElem.classList.add('bg-emerald-600/30', 'border-emerald-500', 'text-emerald-300');
         fBox.className = 'p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-xs text-emerald-300 space-y-1';
         if (student) {
-          const saveNote = scoreSaved ? ' (' + points + ' points)' : ' (score could not sync)';
+          const saveNote = scoreSaved ? ' (' + points + ' points)' : ' (score could not save)';
           fBox.innerHTML = '<strong><i class="fa-solid fa-check-circle"></i> Correct! Answered in ' + elapsed + 's' + saveNote + '</strong><p class="text-slate-300 mt-1">' + escapeHtml(explanation) + '</p>';
         } else {
           fBox.innerHTML = '<strong><i class="fa-solid fa-check-circle"></i> Correct! Faculty preview.</strong><p class="text-slate-300 mt-1">' + escapeHtml(explanation) + '</p>';
@@ -3065,7 +3312,7 @@
       } else {
         buttonElem.classList.add('bg-rose-600/30', 'border-rose-500', 'text-rose-300');
         fBox.className = 'p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs text-rose-300 space-y-1';
-        fBox.innerHTML = '<strong><i class="fa-solid fa-times-circle"></i> Incorrect.' + (student && !scoreSaved ? ' Streak could not sync.' : student ? ' Streak reset.' : '') + '</strong><p class="text-slate-300 mt-1">' + escapeHtml(explanation) + '</p>';
+        fBox.innerHTML = '<strong><i class="fa-solid fa-times-circle"></i> Incorrect.' + (student && !scoreSaved ? ' Streak could not save.' : student ? ' Streak reset.' : '') + '</strong><p class="text-slate-300 mt-1">' + escapeHtml(explanation) + '</p>';
       }
       triggerMathRendering(fBox);
       trigger3DPunch();
@@ -3119,23 +3366,23 @@
       if (!currentUserSession || currentUserSession.role !== 'faculty') return;
       if (!confirm('Reset ALL student quiz points back to zero?')) return;
       try {
-        const { error } = await sbClient.rpc('reset_all_scores');
+        const { error } = await localStore.from('roster').update({ score: 0, streak: 0, latency: '—' }).not('csn', 'is', null);
         if (error) throw error;
-        await syncRosterWithSupabase();
+        await loadLocalRoster();
         refreshQuizPlayerStats();
         initLeaderboard();
         renderRosterTable();
         alert('All student scores have been reset.');
       } catch (error) {
-        reportCloudError('Reset quiz scores', error);
-        alert('Scores were not reset. ' + (error.message || 'Check Supabase permissions.'));
+        reportLocalStorageError('Reset local quiz scores', error);
+        alert('Scores were not reset. ' + (error.message || 'Check browser storage settings.'));
       }
     }
     // -------------------------------------------------------------
-    // 10. MESSAGING ENGINE (SUPABASE CHAT)
+    // 10. MESSAGING ENGINE (LOCAL CHAT)
     // -------------------------------------------------------------
     let activeChatChannel = 'group';
-    let selectedFacultyStudentCSN = initialStudents[1].csn;
+    let selectedFacultyStudentCSN = students[1]?.csn || '';
 
     function populateFacultyDMSel() {
       const sel = document.getElementById('chatStudentSelect');
@@ -3172,26 +3419,17 @@
       return 'dm:' + String(studentCSN || '');
     }
 
-    function syncChatWithSupabase() {
-      if (!isSupabaseActive || !sbClient || !currentUserSession || messagesRealtimeChannel) return;
-      messagesRealtimeChannel = sbClient.channel('room101:messages')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
-          loadChatMessages();
-        })
-        .subscribe();
-    }
-
     async function loadChatMessages() {
       const stream = document.getElementById('chatMessagesStream');
       if (!stream) return;
-      if (!isSupabaseActive || !sbClient || !currentUserSession) {
-        stream.innerHTML = '<div class="p-4 text-center text-xs text-slate-500">Sign in to load classroom messages.</div>';
+      if (!isLocalStoreReady || !localStore || !currentUserSession) {
+        stream.innerHTML = '<div class="p-4 text-center text-xs text-slate-500">Sign in to load messages saved in this browser.</div>';
         return;
       }
-      stream.innerHTML = '<div class="p-4 text-center text-xs text-slate-500">Loading cloud messages...</div>';
+      stream.innerHTML = '<div class="p-4 text-center text-xs text-slate-500">Loading messages saved in this browser...</div>';
       const conversationId = getChatConversationId();
       try {
-        const { data, error } = await sbClient.from('messages')
+        const { data, error } = await localStore.from('messages')
           .select('*')
           .eq('conversation_id', conversationId)
           .order('created_at', { ascending: true });
@@ -3227,7 +3465,7 @@
         triggerMathRendering(stream);
         stream.scrollTop = stream.scrollHeight;
       } catch (error) {
-        reportCloudError('Load messages', error);
+        reportLocalStorageError('Load local messages', error);
         stream.innerHTML = '<div class="p-4 text-center text-xs text-rose-300">Messages could not be loaded. ' + escapeHtml(error.message || '') + '</div>';
       }
     }
@@ -3235,7 +3473,7 @@
     async function sendChatMessage() {
       const input = document.getElementById('chatTextInput');
       const text = input.value.trim();
-      if (!text || !currentUserSession || !isSupabaseActive || !sbClient) return;
+      if (!text || !currentUserSession || !isLocalStoreReady || !localStore) return;
       const recipientCSN = activeChatChannel === 'dm'
         ? (currentUserSession.role === 'faculty' ? selectedFacultyStudentCSN : currentUserSession.csn)
         : null;
@@ -3249,14 +3487,14 @@
         text
       };
       try {
-        const { error } = await sbClient.from('messages').insert(message);
+        const { error } = await localStore.from('messages').insert(message);
         if (error) throw error;
         input.value = '';
         await loadChatMessages();
         trigger3DPunch();
       } catch (error) {
-        reportCloudError('Send message', error);
-        alert('Message was not sent. ' + (error.message || 'Check Supabase access policies.'));
+        reportLocalStorageError('Send message', error);
+        alert('Message was not saved in this browser. ' + (error.message || 'Check browser storage settings.'));
       }
     }
     function shareOnWhatsApp() {
@@ -3272,13 +3510,14 @@
       renderFolderLists();
       renderUploadedFileList();
       updateGeminiStatusUI();
-      updateBackendStatusUI();
-      await initializeSupabaseConnection();
+      updateLocalStorageStatusUI();
+      await initializeLocalStorage();
       await restoreLoginSession();
-      updateBackendStatusUI();
+      updateLocalStorageStatusUI();
     });
   </script>
 </body>
 </html>
+
 
 
