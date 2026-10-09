@@ -477,7 +477,7 @@
             <option value="labs">10 Labs Sandbox</option>
             <option value="quiz">Live Quiz &amp; Speed</option>
             <option value="repository">Docs &amp; Folders</option>
-            <option id="mobileRosterOption" value="roster">Class Roll (55)</option>
+            <option id="mobileRosterOption" value="roster" hidden>Class Roll (55)</option>
             <option value="chat">Room Chat</option>
             <option value="tutor">AI Tutor (Gemini)</option>
           </select>
@@ -486,7 +486,7 @@
           <button type="button" onclick="navigateTo('labs')" id="nav-labs" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">10 Labs Sandbox</button>
           <button type="button" onclick="navigateTo('quiz')" id="nav-quiz" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Live Quiz & Speed</button>
           <button type="button" onclick="navigateTo('repository')" id="nav-repository" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Docs & Folders</button>
-          <button type="button" onclick="navigateTo('roster')" id="nav-roster" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Class Roll (55)</button>
+          <button type="button" onclick="navigateTo('roster')" id="nav-roster" class="nav-tab hidden px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Class Roll (55)</button>
           <button type="button" onclick="navigateTo('chat')" id="nav-chat" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Room Chat</button>
           <button type="button" onclick="navigateTo('tutor')" id="nav-tutor" class="nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">AI Tutor (Gemini)</button>
           </nav>
@@ -534,7 +534,7 @@
               Quantum Physics & Engineering Mechanics Hub
             </h1>
             <p class="text-sm text-slate-300 leading-relaxed">
-              Faculty In-Charge: <strong class="text-white">Prof. Dr. Jayashree G Ghantimath</strong>. Interactive simulation of the 10 laboratory experiments listed in the Engineering Physics manual, speed-tracked live quizzes, real assignment numericals, and Division B roster.
+              Faculty In-Charge: <strong class="text-white">Prof. Dr. Jayashree G Ghantimath</strong>. Interactive simulations of 10 selected Engineering Physics experiments, speed-tracked live quizzes, assignment numericals, and the Division B roster.
             </p>
             <div class="pt-2 flex flex-wrap gap-2 text-xs">
               <button type="button" onclick="navigateTo('labs')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center space-x-1.5">
@@ -639,7 +639,7 @@
               <i class="fa-solid fa-flask-vial text-cyan-400"></i> Engineering Physics Practical Solver
             </h2>
             <p class="text-xs text-slate-400 max-w-3xl">
-              All 10 experiments matched to the official Engineering Physics syllabus. Enter readings to view working and solutions.
+              Enter measurements for the 10 included experiments. Calculations and graphs update together as readings change.
             </p>
           </div>
           <select id="labSelector" onchange="loadSelectedLab(this.value)" class="bg-dark-850 border border-slate-700 text-sm text-white px-3 py-2 rounded-xl focus:outline-none focus:border-cyan-500">
@@ -687,6 +687,15 @@
             <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
               <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Lab accuracy checks</h3>
               <div id="solverChecks" class="text-xs text-slate-300 leading-relaxed space-y-2"></div>
+            </div>
+            <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
+              <div class="flex items-center justify-between gap-3">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-chart-line text-cyan-400"></i> Experiment graph</h3>
+                <span id="solverGraphBadge" class="text-[10px] text-slate-400">Live readings</span>
+              </div>
+              <p id="solverGraphDescription" class="text-[11px] text-slate-400"></p>
+              <div class="relative h-64"><canvas id="labGraph" aria-label="Live experiment graph"></canvas></div>
+              <div id="solverGraphMessage" class="hidden text-xs text-amber-200"></div>
             </div>
           </div>
         </div>
@@ -947,6 +956,7 @@
               <i class="fa-solid fa-comments text-emerald-400"></i> Room 101 Classroom Messaging
             </h2>
             <p class="text-xs text-slate-400">Real-time Cloud synchronized discussion for Room 101.</p>
+            <p class="text-[10px] text-amber-300/80 mt-1">Chat attachments use public room storage. Do not share private or sensitive records.</p>
           </div>
           <div class="flex p-1 bg-dark-850 rounded-xl border border-white/5 text-xs">
             <button type="button" onclick="switchChatChannel('group')" id="btnChatGroup" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold">General Broadcast</button>
@@ -963,10 +973,21 @@
         <div class="glass-card rounded-2xl border border-white/10 h-[500px] flex flex-col justify-between overflow-hidden">
           <div id="chatMessagesStream" class="p-6 overflow-y-auto custom-scroll space-y-4 flex-grow"></div>
 
+          <input type="file" id="chatFileInput" class="hidden" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.md,.rtf,.odt,.ods,.png,.jpg,.jpeg,.gif,.webp,.zip" onchange="handleChatFileChosen(event)"/>
+          <div id="chatAttachmentPreview" class="hidden px-4 pt-3 bg-dark-850/90">
+            <div class="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs">
+              <i class="fa-solid fa-paperclip text-emerald-400"></i>
+              <span id="chatAttachmentName" class="min-w-0 flex-1 truncate text-slate-200"></span>
+              <button type="button" onclick="clearChatAttachment()" title="Remove attachment" aria-label="Remove attachment" class="text-slate-400 hover:text-rose-300"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>
           <div class="p-4 bg-dark-850/90 border-t border-white/10 flex items-center space-x-2">
-            <input type="text" id="chatTextInput" onkeydown="if(event.key==='Enter') sendChatMessage()" placeholder="Type your message... (Press Enter ↵)"
+            <button type="button" onclick="document.getElementById('chatFileInput').click()" title="Attach a document" aria-label="Attach a document" class="w-10 h-10 shrink-0 rounded-xl bg-dark-750 hover:bg-emerald-600/20 text-slate-300 hover:text-emerald-300 border border-white/10 flex items-center justify-center transition-all">
+              <i class="fa-solid fa-paperclip"></i>
+            </button>
+            <input type="text" id="chatTextInput" onkeydown="if(event.key==='Enter') { event.preventDefault(); sendChatMessage(); }" placeholder="Type a message or attach a document..."
               class="flex-grow bg-dark-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"/>
-            <button type="button" onclick="sendChatMessage()" class="p-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-600/30 transition-all flex items-center space-x-1">
+            <button type="button" id="chatSendButton" onclick="sendChatMessage()" title="Send message" aria-label="Send message" class="w-10 h-10 shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center">
               <i class="fa-solid fa-paper-plane"></i>
             </button>
           </div>
@@ -2388,7 +2409,8 @@ Format:
       refreshProgressDashboard();
       updateGeminiStatusUI();
       triggerMathRendering();
-      navigateTo(options.viewId || 'dashboard');
+      const initialView = options.viewId === 'roster' && role !== 'faculty' ? 'dashboard' : (options.viewId || 'dashboard');
+      navigateTo(initialView);
       trigger3DPunch();
 
       syncRosterWithSupabase();
@@ -2585,7 +2607,7 @@ Format:
     // -------------------------------------------------------------
     function navigateTo(viewId) {
       const views = ['dashboard', 'labs', 'quiz', 'repository', 'roster', 'chat', 'tutor'];
-      if(viewId==='roster'&&currentUserSession?.role!=='faculty')viewId='dashboard';
+      if (viewId === 'roster' && currentUserSession?.role !== 'faculty') return;
       if (!views.includes(viewId)) viewId = 'dashboard';
       views.forEach(v => {
         const el = document.getElementById(`view-${v}`);
@@ -2593,6 +2615,7 @@ Format:
         if (el) el.classList.add('hidden');
         if (tabBtn) {
           tabBtn.className = "nav-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
+          if (v === 'roster' && currentUserSession?.role !== 'faculty') tabBtn.classList.add('hidden');
           tabBtn.setAttribute('aria-current', 'false');
         }
       });
@@ -2611,6 +2634,7 @@ Format:
       trigger3DTransition(viewId);
       triggerMathRendering(targetView);
       if (viewId === 'dashboard') refreshProgressDashboard();
+      if (viewId === 'labs') requestAnimationFrame(() => { if(activeLabChart) activeLabChart.resize(); });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2712,9 +2736,10 @@ Format:
         solve(rows) {
           const u=rows.filter(r=>Number.isFinite(r.lambda_nm)&&r.lambda_nm>0&&Number.isFinite(r.v0));
           if(u.length<2) return emptyResult("Enter at least 2 readings.");
-          const pts=u.map(r=>({x:1/(r.lambda_nm*1e-9),y:r.v0}));
-          const fit=linearRegression(pts);if(!Number.isFinite(fit.slope))return emptyResult("Use at least two different wavelengths.");const e=1.602176634e-19, c=299792458, h=e*fit.slope/c, h0=6.62607015e-34;
-          return result([["Slope",sci(fit.slope,4)+" V·m"],["Experimental h",sci(h,4)+" J·s"],["% deviation",fixed(Math.abs((h-h0)/h0)*100,3)+" %"],["R²",fixed(fit.r2,5)]],[`Slope = ${sci(fit.slope,4)}.`,`$h = (e/c)m = ${sci(h,4)}$ J·s.`],["Automatic nm to m conversion."]);
+          const pts=u.map(r=>({x:1/(r.lambda_nm*1e-9)/1e6,y:r.v0}));
+          const fit=linearRegression(pts);if(!Number.isFinite(fit.slope))return emptyResult("Use at least two different wavelengths.");const e=1.602176634e-19, c=299792458, h0=6.62607015e-34;
+          const physicalSlope=fit.slope/1e6,experimentalH=e*physicalSlope/c;
+          return result([["Slope",sci(physicalSlope,4)+" V·m"],["Experimental h",sci(experimentalH,4)+" J·s"],["% deviation",fixed(Math.abs((experimentalH-h0)/h0)*100,3)+" %"],["R²",fixed(fit.r2,5)]],[`Slope = ${sci(physicalSlope,4)} V·m.`,`$h = (e/c)m = ${sci(experimentalH,4)}$ J·s.`],["Automatic nm to m conversion; graph plots V₀ against 1/λ."],fittedGraph("Threshold voltage against reciprocal wavelength","1/λ (10⁶ m⁻¹)","Threshold voltage V₀ (V)",pts,fit));
         }
       },
       2: {
@@ -2727,7 +2752,8 @@ Format:
           const rho=+v.density_gcm3,M=+v.molarMass_gmol,z=+v.valency,NA=6.02214076e23,hbar=1.054571817e-34,me=9.1093837139e-31,e=1.602176634e-19; let n=+v.n_direct;
           if(!(n>0)){ if(!(rho>0&&M>0&&z>0)) return emptyResult("Enter values."); n=z*(rho*1000)/(M/1000)*NA; }
           const EF=(hbar*hbar/(2*me))*Math.pow(3*Math.PI*Math.PI*n,2/3);
-          return result([["Electron concentration n",sci(n,4)+" m⁻³"],["Fermi energy E_F",fixed(EF/e,4)+" eV"]],[`$n = ${sci(n,4)}$ m⁻³.`,`$E_F = ${fixed(EF/e,4)}$ eV.`],["Free electron model calculation."]);
+          const curve=[];for(let i=0;i<=32;i++){const x=n/100*Math.pow(1000,i/32);curve.push({x,y:(hbar*hbar/(2*me))*Math.pow(3*Math.PI*Math.PI*x,2/3)/e});}
+          return result([["Electron concentration n",sci(n,4)+" m⁻³"],["Fermi energy E_F",fixed(EF/e,4)+" eV"]],[`$n = ${sci(n,4)}$ m⁻³.`,`$E_F = ${fixed(EF/e,4)}$ eV.`],["Free electron model calculation; the marker follows the entered or calculated electron concentration."],{title:"Free electron model: Fermi energy vs electron concentration",xLabel:"Electron concentration n (m⁻³)",yLabel:"Fermi energy E_F (eV)",xScale:"logarithmic",yScale:"logarithmic",description:"Model curve with current material value highlighted.",series:[{label:"Free electron model",points:curve,color:"#f59e0b",showLine:true,pointRadius:0},{label:"Current material",points:[{x:n,y:EF/e}],color:"#22d3ee"}]});
         }
       },
       3: {
@@ -2738,18 +2764,23 @@ Format:
         columns:[{key:"D_cm",label:"Distance D",unit:"cm",default:100},{key:"x_cm",label:"Distance x",unit:"cm",default:20},{key:"order",label:"Order m",unit:"",default:1},{key:"linesPerMm",label:"Lines N",unit:"lines/mm",default:500}],
         defaults:[[100,20,1,500],[100,41,2,500]],
         solve(rows){
-          const a=[]; rows.forEach(r=>{const D=+r.D_cm,x=+r.x_cm,m=+r.order,N=+r.linesPerMm;if(D>0&&x>=0&&m>0&&N>0){const s=x/Math.sqrt(x*x+D*D),lam=s/(m*N*1000);a.push({lam,s});}});
-           if(!a.length) return emptyResult("Enter valid rows."); const avg=a.reduce((s,r)=>s+r.lam,0)/a.length;
-          return result([["Average wavelength",fixed(avg*1e9,4)+" nm"],["Average wavelength",sci(avg,4)+" m"]],a.map((r,i)=>`Reading ${i+1}: $\\lambda=${fixed(r.lam*1e9,4)}$ nm.`),["Keep D and x in cm."]);
+          const a=[]; rows.forEach(r=>{const D=+r.D_cm,x=+r.x_cm,m=+r.order,N=+r.linesPerMm;if(D>0&&x>=0&&m>0&&N>0){const s=x/Math.sqrt(x*x+D*D);a.push({x:m,y:s,N});}});
+          if(a.length<2)return emptyResult("Enter at least 2 valid readings with different diffraction orders.");
+          const fit=linearRegression(a),N=a.reduce((sum,r)=>sum+r.N,0)/a.length;
+          if(!(fit.slope>0)&&Number.isFinite(fit.slope))return emptyResult("Check the distance and order readings; the fitted wavelength must be positive.");
+          if(!Number.isFinite(fit.slope))return emptyResult("Use at least two different diffraction orders.");
+          const wavelength=fit.slope/(N*1000);
+          return result([["Wavelength from graph slope",fixed(wavelength*1e9,4)+" nm"],["Wavelength",sci(wavelength,4)+" m"],["R²",fixed(fit.r2,5)]],[`Plot $\\sin\\theta$ against order $m$; fitted slope = ${fixed(fit.slope,6)}.`,`$\\lambda = slope/d = ${fixed(wavelength*1e9,4)}$ nm.`],["D and x use the same units; the grating line density is averaged across readings."],fittedGraph("Diffraction geometry: sin(θ) against order","Diffraction order m","sin(θ)",a,fit));
         }
       },
       4: {
         title:"Determination of numerical aperture of optical fiber.",
         concept:"Spot diameter vs screen distance.",
         formula:"$NA=W/\\sqrt{W^2+4L^2}$; $\\theta_a=\\sin^{-1}(NA)$.",
-        type:"fields",
-        fields:[{key:"L_cm",label:"Distance L",unit:"cm",default:20,min:0},{key:"W_cm",label:"Spot diameter W",unit:"cm",default:10,min:0}],
-        solve(v){const L=+v.L_cm,W=+v.W_cm;if(!(L>0&&W>0))return emptyResult("Enter positive values.");const na=W/Math.sqrt(W*W+4*L*L),ang=Math.asin(Math.min(1,na))*180/Math.PI;return result([["Numerical aperture NA",fixed(na,6)],["Acceptance angle θₐ",fixed(ang,4)+"°"]],[`$NA = ${fixed(na,6)}$.`],["W represents diameter."]);}
+        type:"table",
+        columns:[{key:"L_cm",label:"Screen distance L",unit:"cm",default:10},{key:"W_cm",label:"Spot diameter W",unit:"cm",default:5}],
+        defaults:[[10,5],[20,10],[30,15]],
+        solve(rows){const a=rows.filter(r=>+r.L_cm>0&&+r.W_cm>0).map(r=>({x:+r.L_cm,y:+r.W_cm/2}));if(a.length<2)return emptyResult("Enter at least 2 positive distance and spot-diameter readings.");const fit=linearRegression(a);if(!(fit.slope>0))return emptyResult("Spot radius should increase with screen distance; check the readings.");const na=fit.slope/Math.sqrt(1+fit.slope*fit.slope),ang=Math.asin(Math.min(1,na))*180/Math.PI;return result([["Numerical aperture NA",fixed(na,6)],["Acceptance angle θₐ",fixed(ang,4)+"°"],["Fit R²",fixed(fit.r2,5)]],[`Plot spot radius $W/2$ against distance $L$; slope = tan(θₐ) = ${fixed(fit.slope,6)}.`,`$NA = sin(θₐ) = ${fixed(na,6)}$.`],["W is the measured spot diameter; the fitted slope uses radius W/2."],fittedGraph("Optical fiber: spot radius against screen distance","Screen distance L (cm)","Spot radius W/2 (cm)",a,fit));}
       },
       5: {
         title:"Determination of energy gap of a semiconductor by four probe method.",
@@ -2759,7 +2790,7 @@ Format:
         columns:[{key:"T_C",label:"Temp",unit:"°C",default:30},{key:"V_mV",label:"Voltage",unit:"mV",default:12},{key:"I_mA",label:"Current",unit:"mA",default:10}],
         defaults:[[30,12,10],[40,13.8,10],[50,16.0,10],[60,18.8,10],[70,22.4,10]],
         extraFields:[{key:"s_mm",label:"Spacing s",unit:"mm",default:2,min:0},{key:"F",label:"Correction F",unit:"",default:1,min:0}],
-          solve(rows,extra){const s=+extra.s_mm,F=+extra.F;const valid=rows.filter(r=>+r.T_C>-273.15&&+r.V_mV>0&&+r.I_mA>0);if(!(s>0&&F>0))return emptyResult("Enter positive sample spacing and correction factor.");if(valid.length<2)return emptyResult("Enter at least 2 valid readings.");const pts=valid.map(r=>{const T=+r.T_C+273.15,rho=2*Math.PI*(s/1000)*((+r.V_mV/1000)/(+r.I_mA/1000))*F;return{x:1000/T,y:Math.log(rho)};});const fit=linearRegression(pts);if(!Number.isFinite(fit.slope))return emptyResult("Enter readings at two or more different temperatures.");const Eg=2*8.617333e-5*1000*Math.abs(fit.slope);return result([["Energy gap E_g",fixed(Eg,4)+" eV"],["R²",fixed(fit.r2,5)]],[`Slope = ${fixed(fit.slope,4)}.`,`$E_g = 2k_B(1000)|slope| = ${fixed(Eg,4)}$ eV.`],["Temperature converted to Kelvin; magnitude of slope used."]);}
+          solve(rows,extra){const s=+extra.s_mm,F=+extra.F;const valid=rows.filter(r=>+r.T_C>-273.15&&+r.V_mV>0&&+r.I_mA>0);if(!(s>0&&F>0))return emptyResult("Enter positive sample spacing and correction factor.");if(valid.length<2)return emptyResult("Enter at least 2 valid readings.");const pts=valid.map(r=>{const T=+r.T_C+273.15,rho=2*Math.PI*(s/1000)*((+r.V_mV/1000)/(+r.I_mA/1000))*F;return{x:1000/T,y:Math.log(rho)};});const fit=linearRegression(pts);if(!Number.isFinite(fit.slope))return emptyResult("Enter readings at two or more different temperatures.");const Eg=2*8.617333e-5*1000*Math.abs(fit.slope);return result([["Energy gap E_g",fixed(Eg,4)+" eV"],["R²",fixed(fit.r2,5)]],[`Slope = ${fixed(fit.slope,4)}.`,`$E_g = 2k_B(1000)|slope| = ${fixed(Eg,4)}$ eV.`],["Temperature converted to Kelvin; magnitude of slope used."],fittedGraph("Four probe: ln(ρ) against 1000/T","1000/T (K⁻¹)","ln(ρ)",pts,fit));}
       },
       6: {
         title:"The study of frequency response in series LCR circuit.",
@@ -2768,15 +2799,21 @@ Format:
         type:"table",
         columns:[{key:"f_Hz",label:"Frequency",unit:"Hz",default:1000},{key:"I_mA",label:"Current",unit:"mA",default:5}],
         defaults:[[500,2],[800,3.8],[900,4.5],[1000,5],[1100,4.6],[1200,3.9],[1500,2.5]],
-          solve(rows){const a=rows.filter(r=>Number.isFinite(+r.f_Hz)&&+r.f_Hz>0&&Number.isFinite(+r.I_mA)&&+r.I_mA>=0).map(r=>({f:+r.f_Hz,I:+r.I_mA})).sort((x,y)=>x.f-y.f);if(a.length<3)return emptyResult("Enter at least 3 valid readings.");const im=Math.max(...a.map(r=>r.I)),peak=a.findIndex(r=>r.I===im),half=im/Math.sqrt(2);if(!(im>0))return emptyResult("Current readings must include a value above zero.");const crossing=(left,right)=>{const p1=a[left],p2=a[right];if(!p1||!p2||(p1.I-half)*(p2.I-half)>0||p1.I===p2.I)return null;return p1.f+(half-p1.I)*(p2.f-p1.f)/(p2.I-p1.I);};let f1=null,f2=null;for(let i=peak-1;i>=0;i--){if(a[i].I<=half&&a[i+1].I>=half){f1=crossing(i,i+1);break;}}for(let i=peak;i<a.length-1;i++){if(a[i].I>=half&&a[i+1].I<=half){f2=crossing(i,i+1);break;}}if(f1===null||f2===null||f2<=f1)return emptyResult("Add readings on both sides of the peak that reach the half-power current.");const bw=f2-f1;return result([["Resonant frequency f₀",fixed(a[peak].f,2)+" Hz"],["Half-power bandwidth",fixed(bw,2)+" Hz"],["Quality factor Q",fixed(a[peak].f/bw,4)]],[`$I_{half}=I_{max}/\\sqrt{2}=${fixed(half,4)}$ mA.`,`$f_1=${fixed(f1,2)}$ Hz, $f_2=${fixed(f2,2)}$ Hz, $Q=f_0/(f_2-f_1)$.`],["Readings should bracket the peak and both half-power crossings; linear interpolation is used."]);}
+          solve(rows){const a=rows.filter(r=>Number.isFinite(+r.f_Hz)&&+r.f_Hz>0&&Number.isFinite(+r.I_mA)&&+r.I_mA>=0).map(r=>({x:+r.f_Hz,y:+r.I_mA})).sort((x,y)=>x.x-y.x);if(a.length<3)return emptyResult("Enter at least 3 valid readings.");const im=Math.max(...a.map(r=>r.y)),peak=a.findIndex(r=>r.y===im),half=im/Math.sqrt(2);if(!(im>0))return emptyResult("Current readings must include a value above zero.");const crossing=(left,right)=>{const p1=a[left],p2=a[right];if(!p1||!p2||(p1.y-half)*(p2.y-half)>0||p1.y===p2.y)return null;return p1.x+(half-p1.y)*(p2.x-p1.x)/(p2.y-p1.y);};let f1=null,f2=null;for(let i=peak-1;i>=0;i--){if(a[i].y<=half&&a[i+1].y>=half){f1=crossing(i,i+1);break;}}for(let i=peak;i<a.length-1;i++){if(a[i].y>=half&&a[i+1].y<=half){f2=crossing(i,i+1);break;}}if(f1===null||f2===null||f2<=f1)return emptyResult("Add readings on both sides of the peak that reach the half-power current.");const bw=f2-f1,graph={title:"Series LCR frequency response",xLabel:"Frequency (Hz)",yLabel:"Current (mA)",description:"Half-power line and measured points use the same readings as the bandwidth calculation.",series:[{label:"Measured current",points:a,color:"#22d3ee",showLine:true},{label:"Half-power current",points:[{x:a[0].x,y:half},{x:a[a.length-1].x,y:half}],color:"#f59e0b",showLine:true,pointRadius:0,dash:[5,4]}]};return result([["Resonant frequency f₀",fixed(a[peak].x,2)+" Hz"],["Half-power bandwidth",fixed(bw,2)+" Hz"],["Quality factor Q",fixed(a[peak].x/bw,4)]],[`$I_{half}=I_{max}/\\sqrt{2}=${fixed(half,4)}$ mA.`,`$f_1=${fixed(f1,2)}$ Hz, $f_2=${fixed(f2,2)}$ Hz, $Q=f_0/(f_2-f_1)$.`],["Readings should bracket the peak and both half-power crossings; linear interpolation is used."],graph);}
       },
       7: {
         title:"Identification of passive components in a black box.",
         concept:"Estimating R, C, or L values.",
         formula:"$R=V/I$; $C=1/(2\\pi f X_C)$; $L=X_L/(2\\pi f)$.",
-        type:"fields",
-        fields:[{key:"component",label:"Component",unit:"",type:"select",options:[["R","Resistor"],["C","Capacitor"],["L","Inductor"]],default:"R"},{key:"V_V",label:"Voltage",unit:"V",default:5,min:0},{key:"I_A",label:"Current",unit:"A",default:0.01,min:0},{key:"f_Hz",label:"Freq",unit:"Hz",default:1000,min:0}],
-          solve(v){const V=+v.V_V,I=+v.I_A,f=+v.f_Hz;if(!(V>0&&I>0))return emptyResult("Enter positive voltage and current.");if(v.component!=='R'&&!(f>0))return emptyResult("Enter a positive frequency for capacitance or inductance.");const X=V/I;if(v.component==='R')return result([["Resistance",fixed(X,2)+" Ω"]],[`$R = V/I = ${fixed(X,2)}$ Ω.`],["Ideal model."]);if(v.component==='C')return result([["Capacitance",fixed(1/(2*Math.PI*f*X)*1e6,4)+" µF"]],[`$C = 1/(2\\pi f X_C)$.`],["Ideal model."]);return result([["Inductance",fixed(X/(2*Math.PI*f)*1e3,4)+" mH"]],[`$L = X_L/(2\\pi f)$.`],["Ideal model."]);}
+        type:"table",
+        columns:[{key:"f_Hz",label:"Frequency",unit:"Hz",default:500},{key:"V_V",label:"Voltage",unit:"V",default:1},{key:"I_A",label:"Current",unit:"A",default:0.002}],
+        defaults:[[500,1,0.002],[1000,2,0.004],[1500,3,0.006]],
+        extraFields:[{key:"component",label:"Component",unit:"",type:"select",options:[["R","Resistor"],["C","Capacitor"],["L","Inductor"]],default:"R"}],
+        solve(rows,extra){const component=extra.component,valid=rows.filter(r=>+r.f_Hz>0&&+r.V_V>0&&+r.I_A>0);if(valid.length<2)return emptyResult("Enter at least 2 positive voltage, current, and frequency readings.");let pts,xLabel,yLabel,title,quantity,unit,formula,fitPoints;
+          if(component==='R'){pts=valid.map(r=>({x:+r.I_A,y:+r.V_V}));xLabel="Current (A)";yLabel="Voltage (V)";title="Resistor: voltage against current";quantity="Resistance";unit="Ω";fitPoints=pts;formula="$R = slope(V/I)$.";}
+          else if(component==='C'){pts=valid.map(r=>({x:1/+r.f_Hz,y:+r.V_V/+r.I_A}));xLabel="1/frequency (s)";yLabel="Capacitive reactance X_C (Ω)";title="Capacitor: reactance against reciprocal frequency";quantity="Capacitance";unit="µF";fitPoints=pts;formula="$C = 1/(2\\pi \\times slope)$.";}
+          else{pts=valid.map(r=>({x:+r.f_Hz,y:+r.V_V/+r.I_A}));xLabel="Frequency (Hz)";yLabel="Inductive reactance X_L (Ω)";title="Inductor: reactance against frequency";quantity="Inductance";unit="mH";fitPoints=pts;formula="$L = slope/(2\\pi)$.";}
+          const fit=linearRegression(fitPoints);if(!(fit.slope>0))return emptyResult("The fitted slope must be positive; check the readings for the selected component.");const value=component==='R'?fit.slope:component==='C'?1/(2*Math.PI*fit.slope)*1e6:fit.slope/(2*Math.PI)*1e3;return result([[quantity,fixed(value,4)+" "+unit],["Fit R²",fixed(fit.r2,5)]],[formula,`Fitted slope = ${sci(fit.slope,4)}.`],["Use at least two distinct readings. For C and L, V/I is the measured reactance."],fittedGraph(title,xLabel,yLabel,pts,fit));}
       },
       8: {
         title:"I-V characteristics and responsivity of a photodiode.",
@@ -2785,15 +2822,17 @@ Format:
         type:"table",
         columns:[{key:"V_V",label:"Reverse V",unit:"V",default:1},{key:"Ilight_uA",label:"Light current",unit:"µA",default:25},{key:"Idark_uA",label:"Dark current",unit:"µA",default:2},{key:"P_mW",label:"Power",unit:"mW",default:1}],
         defaults:[[1,25,2,1],[2,27,2,1]],
-          solve(rows){const a=rows.filter(r=>+r.P_mW>0&&Number.isFinite(+r.Ilight_uA)&&Number.isFinite(+r.Idark_uA)).map(r=>({R:(+r.Ilight_uA-+r.Idark_uA)*1e-6/(+r.P_mW*1e-3)})).filter(r=>Number.isFinite(r.R)&&r.R>0);if(!a.length)return emptyResult("Enter positive optical power and light current above dark current.");const av=a.reduce((s,r)=>s+r.R,0)/a.length;return result([["Average Responsivity",fixed(av,5)+" A/W"]],[`$R_\\lambda = ${fixed(av,5)}$ A/W.`],["µA and mW converted."]);}
+          solve(rows){const valid=rows.filter(r=>+r.P_mW>0&&Number.isFinite(+r.V_V)&&Number.isFinite(+r.Ilight_uA)&&Number.isFinite(+r.Idark_uA)),a=valid.map(r=>({R:(+r.Ilight_uA-+r.Idark_uA)*1e-6/(+r.P_mW*1e-3)})).filter(r=>Number.isFinite(r.R)&&r.R>0);if(!a.length)return emptyResult("Enter positive optical power and light current above dark current.");const av=a.reduce((s,r)=>s+r.R,0)/a.length,light=valid.map(r=>({x:+r.V_V,y:+r.Ilight_uA})).sort((x,y)=>x.x-y.x),dark=valid.map(r=>({x:+r.V_V,y:+r.Idark_uA})).sort((x,y)=>x.x-y.x),graph={title:"Photodiode reverse-bias I–V characteristics",xLabel:"Reverse voltage (V)",yLabel:"Current (µA)",description:"Light and dark current curves are plotted against reverse voltage.",series:[{label:"Light current",points:light,color:"#22d3ee",showLine:true},{label:"Dark current",points:dark,color:"#f59e0b",showLine:true}]};return result([["Average Responsivity",fixed(av,5)+" A/W"]],[`$R_\\lambda = ${fixed(av,5)}$ A/W.`],["µA and mW converted; responsivity is calculated for each valid reading."],graph);}
       },
       9: {
         title:"Dielectric constant by charging and discharging method.",
         concept:"Capacitance from RC time constant.",
         formula:"$\\tau=RC$; $C=\\tau/R$; $\\epsilon_r=C/C_0$.",
-        type:"fields",
-        fields:[{key:"R_kOhm",label:"Resistance R",unit:"kΩ",default:100,min:0},{key:"time_s",label:"Time constant τ",unit:"s",default:10,min:0},{key:"C0_nF",label:"Ref C₀",unit:"nF",default:50,min:0}],
-          solve(v){const R=+v.R_kOhm*1000,t=+v.time_s,C0=+v.C0_nF*1e-9;if(!(R>0&&t>0&&C0>0))return emptyResult("Enter positive resistance, time constant, and reference capacitance.");const C=t/R;return result([["Capacitance",fixed(C*1e9,4)+" nF"],["Dielectric constant εᵣ",fixed(C/C0,4)]],[`$\\tau = RC \\implies C = ${sci(C,4)}$ F.`],["63.2% charging or 36.8% discharging."]);}
+        type:"table",
+        columns:[{key:"time_s",label:"Time",unit:"s",default:2},{key:"V_V",label:"Capacitor voltage",unit:"V",default:0.9063}],
+        defaults:[[2,0.9063],[5,1.9673],[10,3.1606],[15,3.8843]],
+        extraFields:[{key:"mode",label:"Reading type",type:"select",options:[["charge","Charging"],["discharge","Discharging"]],default:"charge"},{key:"supply_V",label:"Supply voltage Vₛ",unit:"V",default:5,min:0},{key:"R_kOhm",label:"Resistance R",unit:"kΩ",default:100,min:0},{key:"C0_nF",label:"Reference capacitance C₀",unit:"nF",default:100000,min:0}],
+        solve(rows,extra){const mode=extra.mode,R=+extra.R_kOhm*1000,C0=+extra.C0_nF*1e-9,Vs=+extra.supply_V,valid=rows.filter(r=>+r.time_s>=0&&+r.V_V>0).sort((a,b)=>+a.time_s-+b.time_s);if(!(R>0&&C0>0))return emptyResult("Enter positive resistance and reference capacitance.");if(valid.length<2)return emptyResult("Enter at least 2 valid time and voltage readings.");const V0=+valid[0].V_V,pts=[];for(const r of valid){const t=+r.time_s,V=+r.V_V;let y;if(mode==='charge'){if(!(Vs>0&&V<Vs))return emptyResult("For charging, each voltage must be below the positive supply voltage.");y=Math.log(1-V/Vs);}else{if(!(V<=V0))return emptyResult("For discharging, voltage should not increase above the first reading.");y=Math.log(V/V0);}if(!Number.isFinite(y))return emptyResult("Check that each voltage is within the valid charging or discharging range.");pts.push({x:t,y});}const fit=linearRegression(pts);if(!(fit.slope<0))return emptyResult("Voltage readings must show the expected exponential charging or discharging trend.");const tau=-1/fit.slope,C=tau/R,epsilon=C/C0,graphTitle=mode==='charge'?"RC charging: ln(1 − V/Vₛ) against time":"RC discharging: ln(V/V₀) against time";return result([["Time constant τ",fixed(tau,4)+" s"],["Capacitance",fixed(C*1e9,4)+" nF"],["Dielectric constant εᵣ",fixed(epsilon,4)],["Fit R²",fixed(fit.r2,5)]],[`Linearized ${mode} readings give slope = ${fixed(fit.slope,6)} s⁻¹.`,`$\\tau = -1/slope = ${fixed(tau,4)}$ s; $C=\\tau/R$.`],["Graph and time constant are calculated from the entered voltage readings."],fittedGraph(graphTitle,"Time (s)","Linearized voltage",pts,fit));}
       },
       10: {
         title:"Energy gap of a semiconductor diode.",
@@ -2802,7 +2841,7 @@ Format:
         type:"table",
         columns:[{key:"T_C",label:"Temp",unit:"°C",default:30},{key:"I0_uA",label:"Current I₀",unit:"µA",default:2}],
         defaults:[[30,2],[40,3.5],[50,6],[60,10]],
-          solve(rows){const pts=rows.filter(r=>+r.T_C>-273.15&&+r.I0_uA>0).map(r=>({x:1000/(+r.T_C+273.15),y:Math.log10(+r.I0_uA)})).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));if(pts.length<2)return emptyResult("Enter at least 2 readings above absolute zero with positive current.");const fit=linearRegression(pts);if(!Number.isFinite(fit.slope))return emptyResult("Enter readings at two or more different temperatures.");const Eg=2*2.303*8.61733e-5*1000*Math.abs(fit.slope);return result([["Energy gap E_g",fixed(Eg,4)+" eV"],["R²",fixed(fit.r2,5)]],[`Slope = ${fixed(fit.slope,4)}.`,`$E_g = 2(2.303) k_B(1000)|slope| = ${fixed(Eg,4)}$ eV.`],["Use log₁₀(I₀) vs 1000/T; temperature is converted to Kelvin."]);}
+          solve(rows){const pts=rows.filter(r=>+r.T_C>-273.15&&+r.I0_uA>0).map(r=>({x:1000/(+r.T_C+273.15),y:Math.log10(+r.I0_uA)})).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));if(pts.length<2)return emptyResult("Enter at least 2 readings above absolute zero with positive current.");const fit=linearRegression(pts);if(!Number.isFinite(fit.slope))return emptyResult("Enter readings at two or more different temperatures.");const Eg=2*2.303*8.61733e-5*1000*Math.abs(fit.slope);return result([["Energy gap E_g",fixed(Eg,4)+" eV"],["R²",fixed(fit.r2,5)]],[`Slope = ${fixed(fit.slope,4)}.`,`$E_g = 2(2.303) k_B(1000)|slope| = ${fixed(Eg,4)}$ eV.`],["Use log₁₀(I₀) vs 1000/T; temperature is converted to Kelvin."],fittedGraph("Semiconductor diode: log₁₀(I₀) against 1000/T","1000/T (K⁻¹)","log₁₀(I₀ / µA)",pts,fit));}
       }
     };
 
@@ -2816,7 +2855,62 @@ Format:
       return {slope,intercept,r2:ssTot?1-ssRes/ssTot:1};
     }
     function emptyResult(message){return {error:message};}
-    function result(results,steps,checks){return {results,steps,checks};}
+    function result(results,steps,checks,graph=null){return {results,steps,checks,graph};}
+    let activeLabChart = null;
+
+    function fittedGraph(title,xLabel,yLabel,points,fit=linearRegression(points),options={}) {
+      const valid=points.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));
+      const series=[{label:options.pointsLabel||'Measured readings',points:valid,color:'#22d3ee'}];
+      if(Number.isFinite(fit.slope)&&Number.isFinite(fit.intercept)&&valid.length>1){
+        const xs=valid.map(p=>p.x),min=Math.min(...xs),max=Math.max(...xs);
+        series.push({label:options.fitLabel||'Linear fit',points:[{x:min,y:fit.slope*min+fit.intercept},{x:max,y:fit.slope*max+fit.intercept}],color:'#f59e0b',showLine:true,pointRadius:0,dash:[5,4]});
+      }
+      return {title,xLabel,yLabel,xScale:options.xScale||'linear',yScale:options.yScale||'linear',series,description:options.description||'Measured points update with each reading.'};
+    }
+
+    function renderLabGraph(graph) {
+      const canvas=document.getElementById('labGraph'),badge=document.getElementById('solverGraphBadge'),description=document.getElementById('solverGraphDescription'),message=document.getElementById('solverGraphMessage');
+      if(activeLabChart){activeLabChart.destroy();activeLabChart=null;}
+      if(!graph||!canvas){
+        if(canvas)canvas.classList.add('hidden');
+        if(message){message.textContent='Enter enough valid readings to draw this experiment graph.';message.classList.remove('hidden');}
+        if(badge)badge.textContent='Awaiting readings';
+        if(description)description.textContent='';
+        return;
+      }
+      if(!window.Chart){
+        canvas.classList.add('hidden');
+        message.textContent='The graph library could not load. Reconnect to the internet and reopen this lab.';
+        message.classList.remove('hidden');
+        badge.textContent='Graph unavailable';
+        description.textContent=graph.title;
+        return;
+      }
+      canvas.classList.remove('hidden');
+      message.classList.add('hidden');
+      badge.textContent='Live';
+      description.textContent=graph.title+(graph.description?' · '+graph.description:'');
+      const datasets=(graph.series||[]).map(series=>({
+        label:series.label,
+        data:series.points,
+        parsing:false,
+        showLine:!!series.showLine,
+        borderColor:series.color||'#22d3ee',
+        backgroundColor:series.color||'#22d3ee',
+        borderDash:series.dash||[],
+        pointRadius:series.pointRadius===undefined?(series.showLine?0:4):series.pointRadius,
+        pointHoverRadius:6,
+        borderWidth:2,
+        tension:0
+      }));
+      activeLabChart=new Chart(canvas.getContext('2d'),{
+        type:'scatter',
+        data:{datasets},
+        options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:datasets.length>1,labels:{color:'#cbd5e1',boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:context=>`${context.dataset.label}: (${Number(context.parsed.x).toPrecision(4)}, ${Number(context.parsed.y).toPrecision(4)})`}}},
+          scales:{x:{type:graph.xScale||'linear',title:{display:true,text:graph.xLabel,color:'#cbd5e1',font:{size:11}},ticks:{color:'#94a3b8',maxTicksLimit:7},grid:{color:'rgba(148,163,184,0.12)'}},y:{type:graph.yScale||'linear',title:{display:true,text:graph.yLabel,color:'#cbd3e1',font:{size:11}},ticks:{color:'#94a3b8',maxTicksLimit:7},grid:{color:'rgba(148,163,184,0.12)'}}}}
+      });
+    }
+
     let activeLabId='1';
 
     function loadSelectedLab(val){
@@ -2853,7 +2947,7 @@ Format:
       const title=document.createElement('div');title.className='text-[11px] text-slate-300 mb-1';title.textContent=`${f.label}${f.unit?' · '+f.unit:''}`;wrap.appendChild(title);
       let el;
       if(f.type==='select'){el=document.createElement('select');el.className='w-full bg-dark-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white';(f.options||[]).forEach(o=>{const op=document.createElement('option');op.value=o[0];op.textContent=o[1];el.appendChild(op);});el.value=f.default??'';}else{el=document.createElement('input');el.type='number';el.step='any';el.className='w-full bg-dark-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white';el.value=f.default??'';}
-      el.dataset.key=f.key;el.classList.add(cls);el.addEventListener('input',()=>{calculateLabSolver();});wrap.appendChild(el);return wrap;
+      el.dataset.key=f.key;el.classList.add(cls);el.addEventListener(f.type==='select'?'change':'input',()=>{calculateLabSolver();});wrap.appendChild(el);return wrap;
     }
 
     function addLabRow(values=[]){
@@ -2868,8 +2962,8 @@ Format:
       const lab=labDirectory[activeLabId];if(!lab)return;const values=lab.type==='table'?collectTableRows():collectFieldValues('labField');const extras=collectFieldValues('labExtraField');let out;
       try{out=lab.solve(values,extras);}catch(e){out=emptyResult(e.message||'Calculation error.');}
       const badge=document.getElementById('solverResultBadge'),resBox=document.getElementById('solverResults'),stepBox=document.getElementById('solverSteps'),checkBox=document.getElementById('solverChecks');
-      if(out.error){badge.textContent='Input needed';badge.className='text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/20';resBox.innerHTML=`<div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-200">${escapeHtml(out.error)}</div>`;stepBox.replaceChildren();checkBox.replaceChildren();return;}
-      badge.textContent='Calculated';badge.className='text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/20';resBox.innerHTML=out.results.map(([k,v])=>`<div class="flex justify-between gap-4 py-2 border-b border-white/5"><span class="text-slate-400">${escapeHtml(k)}</span><strong class="font-mono text-white text-right">${escapeHtml(v)}</strong></div>`).join('');stepBox.innerHTML=out.steps.map(s=>`<div class="p-2.5 rounded-lg bg-dark-850/60 border border-white/5">${escapeHtml(s)}</div>`).join('');checkBox.innerHTML=out.checks.map(s=>`<div class="flex gap-2"><i class="fa-solid fa-check text-emerald-400 mt-0.5"></i><span>${escapeHtml(s)}</span></div>`).join('');triggerMathRendering(document.getElementById('view-labs'));
+      if(out.error){badge.textContent='Input needed';badge.className='text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/20';resBox.innerHTML=`<div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-200">${escapeHtml(out.error)}</div>`;stepBox.replaceChildren();checkBox.replaceChildren();renderLabGraph(null);return;}
+      badge.textContent='Calculated';badge.className='text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/20';resBox.innerHTML=out.results.map(([k,v])=>`<div class="flex justify-between gap-4 py-2 border-b border-white/5"><span class="text-slate-400">${escapeHtml(k)}</span><strong class="font-mono text-white text-right">${escapeHtml(v)}</strong></div>`).join('');stepBox.innerHTML=out.steps.map(s=>`<div class="p-2.5 rounded-lg bg-dark-850/60 border border-white/5">${escapeHtml(s)}</div>`).join('');checkBox.innerHTML=out.checks.map(s=>`<div class="flex gap-2"><i class="fa-solid fa-check text-emerald-400 mt-0.5"></i><span>${escapeHtml(s)}</span></div>`).join('');renderLabGraph(out.graph);triggerMathRendering(document.getElementById('view-labs'));
     }
     function resetLabSolver(){loadSelectedLab(activeLabId);}
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
@@ -2877,7 +2971,7 @@ Format:
     function isSafeDocumentUrl(value){
       const url=String(value||'').trim();
       if(isSafeHttpUrl(url))return true;
-      return /^data:(?:application\/(?:pdf|vnd\.openxmlformats-officedocument\.[a-z0-9.-]+|vnd\.ms-excel|octet-stream)|text\/(?:plain|csv)|image\/(?:png|jpeg|gif|webp));base64,/i.test(url);
+      return /^data:(?:application\/(?:pdf|msword|vnd\.ms-powerpoint|zip|x-zip-compressed|rtf|vnd\.oasis\.opendocument\.[a-z0-9.-]+|vnd\.openxmlformats-officedocument\.[a-z0-9.-]+|vnd\.ms-excel|octet-stream)|text\/(?:plain|csv)|image\/(?:png|jpeg|gif|webp));base64,/i.test(url);
     }
     function safeMarkdownToHtml(markdown){
       const parsedHtml=window.marked?window.marked.parse(String(markdown)):escapeHtml(markdown);
@@ -3182,6 +3276,82 @@ Format:
     // -------------------------------------------------------------
     let activeChatChannel = 'group';
     let selectedFacultyStudentCSN = initialStudents[1].csn;
+    let pendingChatFile = null;
+    let chatSending = false;
+    const CHAT_ATTACHMENT_PREFIX = 'ROOM101_ATTACHMENT_V1:';
+    const CHAT_MAX_FILE_BYTES = 20 * 1024 * 1024;
+    const CHAT_LOCAL_FILE_BYTES = 1024 * 1024;
+
+    function handleChatFileChosen(event) {
+      const file=event.target.files&&event.target.files[0];
+      if(!file)return;
+      if(!/\.(pdf|doc|docx|ppt|pptx|xls|xlsx|csv|txt|md|rtf|odt|ods|png|jpe?g|gif|webp|zip)$/i.test(file.name)){
+        alert('Choose a PDF, Office document, text file, image, CSV, or ZIP file.');event.target.value='';return;
+      }
+      if(file.size===0||file.size>CHAT_MAX_FILE_BYTES){
+        alert('Choose a non-empty file no larger than 20 MB.');event.target.value='';return;
+      }
+      pendingChatFile=file;
+      document.getElementById('chatAttachmentName').textContent=`${file.name} · ${(file.size/1024).toFixed(1)} KB`;
+      document.getElementById('chatAttachmentPreview').classList.remove('hidden');
+    }
+
+    function clearChatAttachment() {
+      pendingChatFile=null;
+      const input=document.getElementById('chatFileInput');
+      if(input)input.value='';
+      document.getElementById('chatAttachmentPreview').classList.add('hidden');
+      document.getElementById('chatAttachmentName').textContent='';
+    }
+
+    function readChatFileAsDataUrl(file) {
+      return new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result||''));
+        reader.onerror=()=>reject(new Error('The browser could not read this file.'));
+        reader.onabort=()=>reject(new Error('File reading was cancelled.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function saveChatAttachment(file,channel=getCloudChatChannel()) {
+      if(isSupabaseActive&&sbClient){
+        const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-120)||'attachment';
+        const channelKey=String(channel).replace(/[^a-zA-Z0-9_-]/g,'_');
+        const randomPart=window.crypto&&crypto.randomUUID?crypto.randomUUID():`${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const storagePath=`chat/${channelKey}/${randomPart}_${safeName}`;
+        try{
+          const {error}=await sbClient.storage.from('documents').upload(storagePath,file,{cacheControl:'3600',upsert:false,contentType:file.type||'application/octet-stream'});
+          if(error)throw error;
+          const {data}=sbClient.storage.from('documents').getPublicUrl(storagePath);
+          if(!data||!isSafeDocumentUrl(data.publicUrl)){
+            try{await sbClient.storage.from('documents').remove([storagePath]);}catch(e){}
+            throw new Error('The uploaded file did not receive a safe public link.');
+          }
+          return {name:file.name,type:file.type||'application/octet-stream',size:file.size,url:data.publicUrl,storagePath};
+        }catch(cloudError){
+          if(file.size>CHAT_LOCAL_FILE_BYTES)throw new Error('Cloud upload failed. Check the Supabase documents bucket upload policy; local fallback supports files up to 1 MB.');
+          return {name:file.name,type:file.type||'application/octet-stream',size:file.size,url:await readChatFileAsDataUrl(file),localOnly:true};
+        }
+      }
+      if(file.size>CHAT_LOCAL_FILE_BYTES)throw new Error('Cloud storage is unavailable. Local-only chat attachments must be 1 MB or smaller.');
+      return {name:file.name,type:file.type||'application/octet-stream',size:file.size,url:await readChatFileAsDataUrl(file),localOnly:true};
+    }
+
+    function parseChatMessage(text) {
+      const raw=String(text||'');
+      if(!raw.startsWith(CHAT_ATTACHMENT_PREFIX))return {body:raw,attachment:null};
+      try{
+        const saved=JSON.parse(raw.slice(CHAT_ATTACHMENT_PREFIX.length));
+        const attachment=saved&&saved.attachment&&typeof saved.attachment==='object'?saved.attachment:null;
+        if(!attachment||!isSafeDocumentUrl(attachment.url)||typeof attachment.name!=='string')return {body:raw,attachment:null};
+        return {body:typeof saved.body==='string'?saved.body:'',attachment};
+      }catch(e){return {body:raw,attachment:null};}
+    }
+
+    function encodeChatMessage(body,attachment) {
+      return CHAT_ATTACHMENT_PREFIX+JSON.stringify({body,attachment});
+    }
 
     function populateFacultyDMSel() {
       const sel = document.getElementById('chatStudentSelect');
@@ -3253,9 +3423,10 @@ Format:
         } catch(e) {}
       }
 
-      if (msgs.length === 0) {
-        try { msgs = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
-      }
+      let localMsgs=[];
+      try{localMsgs=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(localMsgs))localMsgs=[];}catch(e){}
+      if(msgs.length===0)msgs=localMsgs;
+      else localMsgs.filter(m=>m&& (m.localOnly||parseChatMessage(m.text).attachment?.localOnly)).forEach(m=>msgs.push(m));
 
       if(generation!==chatLoadGeneration)return;
 
@@ -3281,6 +3452,10 @@ Format:
           (currentUserSession.role === 'faculty' && m.role === 'faculty') ||
           (currentUserSession.csn === m.senderCSN)
         );
+        const parsed=parseChatMessage(m.text);
+        const attachment=parsed.attachment;
+        const attachmentCard=attachment?`<a href="${escapeHtml(attachment.url)}" target="_blank" rel="noopener noreferrer" download="${escapeHtml(attachment.name)}" class="mt-2 flex items-center gap-2 rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-left hover:border-emerald-500/40"><i class="fa-solid fa-file-arrow-down text-emerald-300"></i><span class="min-w-0"><span class="block truncate font-semibold text-emerald-200">${escapeHtml(attachment.name)}</span><span class="block text-[10px] text-slate-400">${Number(attachment.size||0)>0?(Number(attachment.size)/1024).toFixed(1)+' KB':'File attachment'}${attachment.localOnly?' · This browser only':''}</span></span></a>`:'';
+        const localOnlyLabel=m.localOnly&&!attachment?'<div class="mt-1 text-[10px] text-amber-300">Saved on this browser only</div>':'';
 
         const div = document.createElement('div');
         div.className = `msg-group flex items-start space-x-3 ${isMe ? 'justify-end' : ''} group relative`;
@@ -3292,7 +3467,9 @@ Format:
               <span class="text-[10px] text-slate-500">${escapeHtml(m.time)}</span>
             </div>
             <div class="p-3 ${isMe ? 'bg-emerald-950/40 border-emerald-500/20 text-slate-200' : 'bg-dark-850 border-white/5 text-slate-200'} rounded-2xl ${isMe ? 'rounded-tr-none' : 'rounded-tl-none'} border text-xs leading-relaxed text-left math-scope">
-              ${escapeHtml(m.text)}
+              ${parsed.body?`<div class="whitespace-pre-wrap break-words">${escapeHtml(parsed.body)}</div>`:''}
+              ${attachmentCard}
+              ${localOnlyLabel}
             </div>
           </div>
         `;
@@ -3306,37 +3483,50 @@ Format:
     async function sendChatMessage() {
       const input = document.getElementById('chatTextInput');
       const text = input.value.trim();
-      if (!text || !currentUserSession) return;
-
-      const key = getChatStorageKey();
-      const msgObj = {
-        channel: getCloudChatChannel(),
-        sender: currentUserSession.name,
-        sender_csn: currentUserSession.csn,
-        role: currentUserSession.role,
-        text: text
-      };
-
-      if (isSupabaseActive && sbClient) {
-        try {
-          const { error }=await sbClient.from('messages').insert([msgObj]);
-          if(error)console.warn('Chat cloud insert notice:',error);
-        } catch(e) { console.warn('Chat cloud insert notice:',e); }
+      if ((!text&&!pendingChatFile)||!currentUserSession||chatSending) return;
+      const button=document.getElementById('chatSendButton'),file=pendingChatFile;
+      const key=getChatStorageKey(),chatChannel=getCloudChatChannel();
+      chatSending=true;
+      if(button)button.disabled=true;
+      input.disabled=true;
+      try{
+        let attachment=file?await saveChatAttachment(file,chatChannel):null;
+        const cloudEnabled=!!(isSupabaseActive&&sbClient);
+        const msgObj={channel:chatChannel,sender:currentUserSession.name,sender_csn:currentUserSession.csn,role:currentUserSession.role,text:attachment?encodeChatMessage(text,attachment):text};
+        let cloudSaved=false;
+        if(cloudEnabled&&!(attachment&&attachment.localOnly)){
+          try{
+            const {error}=await sbClient.from('messages').insert([msgObj]);
+            if(error)throw error;
+            cloudSaved=true;
+          }catch(cloudError){
+            if(attachment){
+              if(attachment.storagePath){try{await sbClient.storage.from('documents').remove([attachment.storagePath]);}catch(e){}}
+              if(file.size>CHAT_LOCAL_FILE_BYTES)throw new Error('The file uploaded, but the chat message could not synchronize. Check the Supabase messages-table insert policy.');
+              attachment={name:file.name,type:file.type||'application/octet-stream',size:file.size,url:await readChatFileAsDataUrl(file),localOnly:true};
+              msgObj.text=encodeChatMessage(text,attachment);
+            }else console.warn('Chat cloud insert notice:',cloudError);
+          }
+        }
+        let msgs=[];
+        try{msgs=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+        msgs.push({...msgObj,senderCSN:currentUserSession.csn,localOnly:!cloudSaved,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+        try{localStorage.setItem(key,JSON.stringify(msgs));}
+        catch(storageError){
+          if(!cloudEnabled)throw new Error('Message could not be saved in this browser.');
+          alert('Message sent to the room, but this browser could not cache it.');
+        }
+        input.value='';
+        clearChatAttachment();
+        await loadChatMessages();
+        trigger3DPunch();
+      }catch(error){
+        alert(error.message||'The message could not be sent.');
+      }finally{
+        chatSending=false;
+        if(button)button.disabled=false;
+        input.disabled=false;
       }
-
-      let msgs = [];
-      try { msgs = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
-      msgs.push({
-        ...msgObj,
-        senderCSN: currentUserSession.csn,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-      try { localStorage.setItem(key, JSON.stringify(msgs)); }
-      catch(e) { alert('Message could not be saved in this browser.'); return; }
-
-      input.value = '';
-      loadChatMessages();
-      trigger3DPunch();
     }
 
     function shareOnWhatsApp() {
